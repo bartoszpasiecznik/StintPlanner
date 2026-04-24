@@ -43,7 +43,7 @@ Service time uses:
 ## 4. Tyre Limits
 
 - `Available Tyres` is the only tyre limiter
-- The starting tyre set counts as the first set
+- The qualifying tyre set counts inside the available tyre limit
 - Additional tyre changes are limited by remaining available sets
 - When the tyre limit is reached, extra `Change All Tyres` toggles are disabled
 
@@ -52,6 +52,10 @@ Service time uses:
 - Each stint is tagged with a tyre set number
 - The tyre set advances only when the previous pit stop changes all tyres
 - The active tyre set is displayed on the stint card
+- The first stint has a `Get Quali Tyres` option
+- If `Get Quali Tyres` is enabled, the first stint uses tyre set `1`
+- If `Get Quali Tyres` is disabled, the first stint uses tyre set `2`
+- Tyre usage and planner warnings must follow that numbering exactly
 
 ## 6. VE Stop Logic
 
@@ -70,6 +74,8 @@ When enabled:
 When disabled:
 
 - VE add is manually editable by the user
+
+The VE need for a stint is based on that stint driver’s own `VE Per Lap` value, not a global car-level VE-per-lap setting.
 
 ## 7. Pit Stops In Timeline
 

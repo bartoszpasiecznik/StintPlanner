@@ -38,7 +38,6 @@ Use this tab for car and pit configuration:
 - fuel capacity
 - fuel per lap
 - VE capacity
-- VE per lap
 - pit lane time
 - base service time
 - default repair time
@@ -58,10 +57,16 @@ Use this tab to configure:
 
 - driver names
 - lap times
+- VE per lap
 - time zones
 - max stints
 
 `Max Stints` is the driver cap used by the planner.
+
+`VE Per Lap` is per-driver and is used by the planner to determine:
+
+- how many laps that driver can run in an energy-limited stint
+- how much VE is needed before that driver’s next stint
 
 ## Right-Side Plan Area
 
@@ -104,7 +109,10 @@ A stint card shows:
 - laps
 - drive time
 - tyre set in use
+- `Get Quali Tyres` on the first stint
 - descriptive notes
+
+Different drivers’ stint cards use different colors so repeated stints are easier to scan.
 
 #### Pit-Stop Card
 
@@ -128,11 +136,16 @@ Each pit stop supports two VE modes:
 - `Add All Needed VE` enabled: VE is automatically filled for the next stint
 - `Add All Needed VE` disabled: VE amount can be edited manually
 
+The VE estimate is based on the next stint driver’s own `VE Per Lap` value.
+
 ## Tyre Behavior
 
 - Tyre changes are configured only on pit stops
 - When all available tyre sets are already used, additional tyre changes cannot be enabled
 - The active tyre set is shown on the stint card, not on the pit card
+- The first stint can optionally use qualifying tyres via `Get Quali Tyres`
+- If `Get Quali Tyres` is enabled, the first stint uses `Tyre Set 1`
+- If `Get Quali Tyres` is disabled, the qualifying set still counts in the tyre limit and the first race stint starts on `Tyre Set 2`
 
 ## Driver Availability
 

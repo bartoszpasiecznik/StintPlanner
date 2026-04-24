@@ -32,13 +32,16 @@ It focuses on:
 - Right-side planning area with:
   - plan summary
   - checks and warnings
-  - a modern timeline of stint cards and pit-stop cards
+  - a compact modern timeline of stint cards and pit-stop cards
 - Driver assignment filtered by stint-cap availability
 - Car-class dependent fuel fields
 - `Available Tyres` race limit
 - `Change All Tyres` only on pit stops
 - Tyre-set display on stint cards
+- Qualifying-tyre handling for the first stint
+- Per-driver stint-card color treatment
 - Optional `Add All Needed VE` per pit stop, with manual VE override
+- Per-driver `VE Per Lap` inputs that determine energy-limited stint length and VE estimates
 
 ## Build
 

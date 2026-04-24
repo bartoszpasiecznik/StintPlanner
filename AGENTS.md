@@ -63,9 +63,11 @@ Preserve these unless the user explicitly asks to change them:
 5. Fuel fields depend on selected car class
 6. Pit-stop fuel input follows the same car-class visibility rules as the car menu
 7. VE can be auto-filled for the next stint or manually entered
-8. Pit stops are shown between stints in the timeline
-9. Summary includes total race laps
-10. The right side should stay compact and card-based, not revert to a large grid
+8. VE-per-lap planning is driver-specific, not car-global
+9. Pit stops are shown between stints in the timeline
+10. Summary includes total race laps
+11. The right side should stay compact and card-based, not revert to a large grid
+12. The first stint can use qualifying tyres, and tyre-set numbering must reflect that exactly
 
 ## High-Risk Areas
 
@@ -101,6 +103,16 @@ Fuel visibility is controlled centrally by:
 
 Reuse these rules instead of introducing competing logic in XAML.
 
+### Tyre numbering
+
+The first-stint qualifying-tyre option changes the actual tyre-set numbering.
+
+Preserve these meanings:
+
+- `Get Quali Tyres = true` means first stint uses tyre set 1
+- `Get Quali Tyres = false` means first stint uses tyre set 2
+- the qualifying set still counts in the race tyre limit either way
+
 ## Editing Guidance
 
 - Prefer small, targeted changes
@@ -108,6 +120,7 @@ Reuse these rules instead of introducing competing logic in XAML.
 - Avoid making the right-side cards larger unless explicitly requested
 - Do not reintroduce unused settings that were already removed
 - Keep docs in sync when behavior changes
+- Preserve per-driver stint colors unless the user asks for a redesign
 
 ## Required Docs To Read First
 

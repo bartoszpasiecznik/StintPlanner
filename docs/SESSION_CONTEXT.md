@@ -26,6 +26,9 @@ The UI direction is:
 - `Available Tyres` is the only tyre limiter
 - tyre changes are configured on pit stops only
 - stint cards show the tyre set being used
+- the first stint can optionally use qualifying tyres
+- when qualifying tyres are used, that first stint is tyre set 1
+- when they are not used, the first race stint starts on tyre set 2 because the qualifying set still counts in the limit
 
 ### Pit Logic
 
@@ -36,8 +39,16 @@ The UI direction is:
 ### Fuel And VE
 
 - fuel visibility depends on car class
-- VE is always available as configured by the car setup
+- VE capacity is configured at car level
+- VE per lap is configured per driver
 - each pit stop can auto-fill VE for the next stint or accept manual VE input
+- VE auto-fill for a stop uses the next stint driver’s own VE-per-lap value
+
+### Visual Direction
+
+- the right-side cards were intentionally made smaller
+- different drivers’ stint cards use different colors
+- tag/chip styling should stay more angular and not drift back toward circle-like pills
 
 ### Summary
 

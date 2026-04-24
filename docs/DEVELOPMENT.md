@@ -29,6 +29,7 @@ Stores:
 
 - name
 - lap time
+- VE per lap
 - timezone
 - max stints
 - assigned stints
@@ -64,6 +65,7 @@ This lets the UI show one mixed timeline while still editing the underlying stin
 
 - timing calculations
 - tyre set assignment
+- qualifying-tyre first-stint handling
 - VE auto-fill for next stint
 - warnings
 - summary values
@@ -87,6 +89,7 @@ This avoids Windows executable locking issues when the app is already running.
 - `MainViewModel.cs` is large and mixes UI-facing state with planning logic
 - timeline rows proxy back into `StintPlan`, which is simple but tightly coupled
 - summary and warnings are text-based rather than structured view models
+- driver-level energy usage is embedded directly into `DriverPlan`, so generation logic and pit VE logic are coupled to driver setup
 
 ## Good Next Refactors
 
@@ -95,6 +98,8 @@ This avoids Windows executable locking issues when the app is already running.
 - replace summary strings with typed summary data
 - add unit tests for:
   - driver availability filtering
+  - driver-specific VE stint limits
   - tyre-limit enforcement
+  - qualifying-tyre first-stint numbering
   - VE auto-fill behavior
   - pit timing calculations

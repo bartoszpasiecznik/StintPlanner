@@ -39,6 +39,7 @@ Stint cards should show:
 - laps
 - drive time
 - tyre set
+- first-stint `Get Quali Tyres` toggle
 - notes
 
 Stint cards should not show:
@@ -75,12 +76,15 @@ Preserve these characteristics:
 - compact info chips
 - narrow editor widths where practical
 - readable but dense layout
+- different driver stints should remain visually distinguishable by color
 
 ## Drivers Tab
 
 The drivers tab must remain easy to use in the constrained left panel.
 
 Avoid layouts where rows or controls become partially hidden or hard to scroll.
+
+It must include per-driver `VE Per Lap` input because energy planning now depends on driver-specific values.
 
 ## Visibility Rules
 
@@ -95,3 +99,5 @@ Fuel input visibility on pit cards must match the car tab fuel rules.
 ### VE
 
 VE manual entry must disable when auto-fill is enabled.
+
+VE planning must be derived from the next stint driver’s own `VE Per Lap` value.

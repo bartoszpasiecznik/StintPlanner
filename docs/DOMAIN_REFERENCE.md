@@ -10,6 +10,7 @@ A driver has:
 
 - name
 - lap time
+- VE per lap
 - time zone
 - max stints
 - assigned stints
@@ -67,13 +68,17 @@ It supports two modes:
 - auto-fill all VE needed for next stint
 - manual entry
 
+The VE need for a stint is calculated from the assigned driver’s `VE Per Lap`.
+
 ### Tyres
 
 `Available Tyres` is the race-wide limiter.
 
 The app treats tyre sets as a race resource:
 
-- the starting set counts as tyre set 1
+- the qualifying set is included in the tyre limit
+- if the first stint uses qualifying tyres, that first race stint runs on tyre set 1
+- if the first stint does not use qualifying tyres, the first race stint starts on tyre set 2
 - enabling `Change All Tyres` consumes another set
 - each stint displays the tyre set it runs on
 
