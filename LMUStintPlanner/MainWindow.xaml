@@ -1,0 +1,529 @@
+<Window x:Class="LMUStintPlanner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="LMU Stint Planner"
+        Height="930"
+        Width="1560"
+        MinHeight="820"
+        MinWidth="1280"
+        Background="#160A0C">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="0,0,0,16"
+                Padding="22"
+                Background="#2A1116"
+                CornerRadius="18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock FontSize="30"
+                               FontWeight="SemiBold"
+                               Foreground="#FFF5F5"
+                               Text="Le Mans Ultimate Stint Planner" />
+                    <TextBlock Margin="0,8,0,0"
+                               FontSize="14"
+                               Foreground="#D3B5BA"
+                               Text="Team-race planning with live stint updates, pit timing, tyre allocation, driver swaps, and real-world local time windows." />
+                </StackPanel>
+
+                <WrapPanel Grid.Column="1"
+                           VerticalAlignment="Center">
+                    <Button Margin="0,0,10,0"
+                            Padding="16,10"
+                            Background="#C44536"
+                            Foreground="White"
+                            BorderBrush="#C44536"
+                            Command="{Binding GenerateStrategyCommand}"
+                            Content="Generate Plan" />
+                    <Button Padding="16,10"
+                            Background="#7C2430"
+                            Foreground="White"
+                            BorderBrush="#7C2430"
+                            Command="{Binding AddManualStintCommand}"
+                            Content="Add Manual Stint" />
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="430" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <Border Padding="18"
+                            Background="#2A1116"
+                            CornerRadius="16">
+                        <StackPanel>
+                            <TextBlock FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFF5F5"
+                                       Text="Race Setup" />
+
+                            <CheckBox Margin="0,14,0,0"
+                                      Foreground="#F2D7DA"
+                                      IsChecked="{Binding AutoGeneratePlan, Mode=TwoWay}"
+                                      Content="Auto-generate stint plan from current inputs" />
+
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Track" />
+                                    <ComboBox Margin="0,6,0,0"
+                                              Padding="8"
+                                              Background="#F6E8EA"
+                                              Foreground="#241316"
+                                              BorderBrush="#7A2E39"
+                                              ItemsSource="{Binding Tracks}"
+                                              SelectedItem="{Binding SelectedTrack, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              DisplayMemberPath="DisplayName" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Race Start" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding RaceStartText, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Hours" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding RaceLengthHours, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Minutes" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding RaceLengthMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Race Time Zone" />
+                                    <ComboBox Margin="0,6,0,0"
+                                              Padding="8"
+                                              Background="#F6E8EA"
+                                              Foreground="#241316"
+                                              BorderBrush="#7A2E39"
+                                              ItemsSource="{Binding TimeZones}"
+                                              SelectedValuePath="Id"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedValue="{Binding RaceTimeZoneId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Margin="0,14,0,0"
+                                    Padding="14"
+                                    Background="#F3E1E4"
+                                    CornerRadius="12">
+                                <TextBlock Foreground="#2B181B"
+                                           Text="{Binding RaceStartSummary}"
+                                           TextWrapping="Wrap" />
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,16,0,0"
+                            Padding="18"
+                            Background="#2A1116"
+                            CornerRadius="16">
+                        <StackPanel>
+                            <TextBlock FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFF5F5"
+                                       Text="Car And Pit" />
+
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Fuel Capacity" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding FuelCapacity, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Fuel Per Lap" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding FuelPerLap, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="VE Capacity" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding EnergyCapacity, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="VE Per Lap" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding EnergyPerLap, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Pit Lane Time (s)" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding PitLaneSeconds, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Base Service Time (s)" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding BasePitSeconds, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Refuel Rate (s/unit)" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding RefuelSecondsPerUnit, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="VE Rate (s/unit)" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding EnergySecondsPerUnit, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Tyre Change (s)" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding TyreChangeSeconds, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Tyre Sets" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding TotalTyreSets, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Tyre Set Limit" />
+                                    <TextBox Margin="0,6,0,0" Padding="8" Background="#F6E8EA" Foreground="#241316" BorderBrush="#7A2E39"
+                                             Text="{Binding TyreSetLapLimit, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Foreground="#D5B3B8" Text="Default Repair Time (s)" />
+                                <TextBox Margin="0,6,0,0"
+                                         Padding="8"
+                                         Background="#F6E8EA"
+                                         Foreground="#241316"
+                                         BorderBrush="#7A2E39"
+                                         Text="{Binding DefaultRepairSeconds, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,16,0,0"
+                            Padding="18"
+                            Background="#2A1116"
+                            CornerRadius="16">
+                        <StackPanel>
+                            <TextBlock FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFF5F5"
+                                       Text="Rain Crossover" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Foreground="#D5B3B8"
+                                       Text="Use current dry pace, current wet pace, and stint fuel/laps remaining to judge whether the crossover point is here."
+                                       TextWrapping="Wrap" />
+
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Current Dry Lap" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding CurrentDryLapTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Current Wet Lap" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding CurrentWetLapTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Laps Left On Stint" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding RemainingStintLaps, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Foreground="#D5B3B8" Text="Fuel Left On Stint" />
+                                    <TextBox Margin="0,6,0,0"
+                                             Padding="8"
+                                             Background="#F6E8EA"
+                                             Foreground="#241316"
+                                             BorderBrush="#7A2E39"
+                                             Text="{Binding RemainingStintFuel, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Margin="0,14,0,0"
+                                    Padding="14"
+                                    Background="#F3E1E4"
+                                    CornerRadius="12">
+                                <StackPanel>
+                                    <TextBlock Foreground="#2B181B"
+                                               FontWeight="SemiBold"
+                                               Text="{Binding RainCrossoverRecommendation}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,8,0,0"
+                                               Foreground="#4A1F24"
+                                               Text="{Binding RainCrossoverSummary}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,16,0,0"
+                            Padding="18"
+                            Background="#2A1116"
+                            CornerRadius="16">
+                        <DockPanel>
+                            <Grid DockPanel.Dock="Top" Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FFF5F5"
+                                           Text="Drivers" />
+                                <Button Grid.Column="1"
+                                        Padding="14,8"
+                                        Background="#7C2430"
+                                        Foreground="White"
+                                        BorderBrush="#7C2430"
+                                        Command="{Binding AddDriverCommand}"
+                                        Content="Add Driver" />
+                            </Grid>
+
+                            <DataGrid AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      HeadersVisibility="Column"
+                                      GridLinesVisibility="Horizontal"
+                                      Background="#F6E8EA"
+                                      Foreground="#241316"
+                                      BorderBrush="#7A2E39"
+                                      RowBackground="#F6E8EA"
+                                      AlternatingRowBackground="#EBD3D7"
+                                      ItemsSource="{Binding Drivers}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                    <DataGridTextColumn Header="Lap" Width="86" Binding="{Binding LapTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                                    <DataGridTextColumn Header="Max" Width="60" Binding="{Binding MaxStintLaps, UpdateSourceTrigger=PropertyChanged}" />
+                                    <DataGridComboBoxColumn Header="Time Zone"
+                                                            Width="180"
+                                                            DisplayMemberPath="DisplayName"
+                                                            SelectedValuePath="Id"
+                                                            SelectedValueBinding="{Binding TimeZoneId, UpdateSourceTrigger=PropertyChanged}"
+                                                            ItemsSource="{Binding DataContext.TimeZones, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <DataGridTemplateColumn Header="" Width="72">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Padding="8,4"
+                                                        Background="#8B1E2D"
+                                                        Foreground="White"
+                                                        BorderBrush="#8B1E2D"
+                                                        Command="{Binding DataContext.RemoveDriverCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="Remove" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <UniformGrid Grid.Row="0"
+                             Columns="2"
+                             Margin="0,0,0,16">
+                    <Border Margin="0,0,8,0"
+                            Padding="18"
+                            Background="#4A1820"
+                            CornerRadius="16">
+                        <StackPanel>
+                            <TextBlock Foreground="#FFDDE2"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Text="Plan Summary" />
+                            <TextBlock Margin="0,10,0,0"
+                                       Foreground="#FFF7F8"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding SummaryText}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="8,0,0,0"
+                            Padding="18"
+                            Background="#F3E1E4"
+                            CornerRadius="16">
+                        <StackPanel>
+                            <TextBlock Foreground="#4A1F24"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Text="Checks" />
+                            <TextBlock Margin="0,10,0,0"
+                                       Foreground="#2B181B"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding WarningText}" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Border Grid.Row="1"
+                        Padding="18"
+                        Background="#2A1116"
+                        CornerRadius="16">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top"
+                              Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock FontSize="20"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FFF5F5"
+                                           Text="Stint Plan" />
+                                <TextBlock Margin="0,6,0,0"
+                                           Foreground="#D5B3B8"
+                                           Text="Stints recalculate live from input changes. In live strategy mode, edited stint rows are preserved while timing, tyre usage, and local driver times update immediately."
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    VerticalAlignment="Top"
+                                    Padding="14,8"
+                                    Background="#5C1D24"
+                                    Foreground="White"
+                                    BorderBrush="#5C1D24"
+                                    Command="{Binding RemoveSelectedStintCommand}"
+                                    Content="Remove Selected" />
+                        </Grid>
+
+                        <DataGrid AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  Background="#F6E8EA"
+                                  Foreground="#241316"
+                                  BorderBrush="#7A2E39"
+                                  RowBackground="#F6E8EA"
+                                  AlternatingRowBackground="#EBD3D7"
+                                  ItemsSource="{Binding Stints}"
+                                  SelectedItem="{Binding SelectedStint, Mode=TwoWay}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Width="42" IsReadOnly="True" Binding="{Binding Number}" />
+                                <DataGridComboBoxColumn Header="Driver"
+                                                        Width="120"
+                                                        DisplayMemberPath="Name"
+                                                        SelectedItemBinding="{Binding Driver, UpdateSourceTrigger=PropertyChanged}"
+                                                        ItemsSource="{Binding DataContext.Drivers, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <DataGridTextColumn Header="Laps" Width="56" Binding="{Binding Laps, UpdateSourceTrigger=PropertyChanged}" />
+                                <DataGridTextColumn Header="Drive" Width="82" IsReadOnly="True" Binding="{Binding DrivingTimeText}" />
+                                <DataGridTextColumn Header="Race Start" Width="92" IsReadOnly="True" Binding="{Binding RaceStartClockText}" />
+                                <DataGridTextColumn Header="Race End" Width="88" IsReadOnly="True" Binding="{Binding RaceEndClockText}" />
+                                <DataGridTextColumn Header="Driver Local" Width="138" IsReadOnly="True" Binding="{Binding DriverLocalWindowText}" />
+                                <DataGridTextColumn Header="Fuel Add" Width="64" Binding="{Binding RefuelAmount, UpdateSourceTrigger=PropertyChanged, StringFormat=F1}" />
+                                <DataGridTextColumn Header="VE Add" Width="60" Binding="{Binding EnergyAmount, UpdateSourceTrigger=PropertyChanged, StringFormat=F1}" />
+                                <DataGridCheckBoxColumn Header="Tyres" Width="54" Binding="{Binding ChangeTyres, UpdateSourceTrigger=PropertyChanged}" />
+                                <DataGridTextColumn Header="Repair" Width="58" Binding="{Binding RepairSeconds, UpdateSourceTrigger=PropertyChanged}" />
+                                <DataGridTextColumn Header="Pit Lane" Width="70" IsReadOnly="True" Binding="{Binding PitLaneTimeText}" />
+                                <DataGridTextColumn Header="Service" Width="66" IsReadOnly="True" Binding="{Binding ServiceTimeText}" />
+                                <DataGridTextColumn Header="Total Pit" Width="72" IsReadOnly="True" Binding="{Binding TotalPitTimeText}" />
+                                <DataGridTextColumn Header="Set" Width="42" IsReadOnly="True" Binding="{Binding TyreSetNumber}" />
+                                <DataGridTextColumn Header="Notes" Width="*" IsReadOnly="True" Binding="{Binding ValidationNote}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
