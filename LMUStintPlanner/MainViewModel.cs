@@ -12,6 +12,7 @@ public sealed class MainViewModel : BindableBase
     private readonly ReadOnlyCollection<TimeZoneInfo> _timeZones;
     private bool _isApplyingCalculatedValues;
     private TrackOption? _selectedTrack;
+    private CarClassOption? _selectedCarClass;
     private int _raceLengthHours = 6;
     private int _raceLengthMinutes;
     private string _raceStartText = "2026-06-13 16:00";
@@ -23,11 +24,9 @@ public sealed class MainViewModel : BindableBase
     private double _energyPerLap = 3.3;
     private double _pitLaneSeconds = 44;
     private double _basePitSeconds = 18;
-    private double _refuelSecondsPerUnit = 0.7;
-    private double _energySecondsPerUnit = 0.2;
+    private double _fullRefillSeconds = 35;
     private double _tyreChangeSeconds = 24;
-    private int _totalTyreSets = 7;
-    private int _tyreSetLapLimit = 28;
+    private int _availableTyres = 7;
     private double _defaultRepairSeconds;
     private string _summaryText = string.Empty;
     private string _warningText = string.Empty;
@@ -36,6 +35,7 @@ public sealed class MainViewModel : BindableBase
     private string _currentWetLapTimeText = "03:40.000";
     private int _remainingStintLaps = 5;
     private double _remainingStintFuel = 15.5;
+    private PlanTimelineRow? _selectedTimelineRow;
     private StintPlan? _selectedStint;
 
     public MainViewModel()
@@ -43,16 +43,19 @@ public sealed class MainViewModel : BindableBase
         _timeZones = TimeZoneInfo.GetSystemTimeZones();
         Drivers = new ObservableCollection<DriverPlan>();
         Stints = new ObservableCollection<StintPlan>();
+        PlanTimelineRows = new ObservableCollection<PlanTimelineRow>();
         Tracks = new ObservableCollection<TrackOption>(CreateTrackOptions());
+        CarClasses = new ObservableCollection<CarClassOption>(CreateCarClasses());
 
         Drivers.CollectionChanged += OnDriversCollectionChanged;
         Stints.CollectionChanged += OnStintsCollectionChanged;
 
         SelectedTrack = Tracks.FirstOrDefault(track => track.Name == "Circuit de la Sarthe") ?? Tracks.FirstOrDefault();
+        SelectedCarClass = CarClasses.FirstOrDefault(carClass => carClass.Name == "Hypercar") ?? CarClasses.FirstOrDefault();
 
-        AddDriverInternal(new DriverPlan("Driver 1", "03:30.500", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 29));
-        AddDriverInternal(new DriverPlan("Driver 2", "03:31.200", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 29));
-        AddDriverInternal(new DriverPlan("Driver 3", "03:29.800", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 29));
+        AddDriverInternal(new DriverPlan("Driver 1", "03:30.500", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.3));
+        AddDriverInternal(new DriverPlan("Driver 2", "03:31.200", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.2));
+        AddDriverInternal(new DriverPlan("Driver 3", "03:29.800", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.4));
 
         AddDriverCommand = new RelayCommand(_ => AddDriver());
         RemoveDriverCommand = new RelayCommand(driver => RemoveDriver(driver as DriverPlan), driver => driver is DriverPlan);
@@ -65,9 +68,13 @@ public sealed class MainViewModel : BindableBase
 
     public ObservableCollection<TrackOption> Tracks { get; }
 
+    public ObservableCollection<CarClassOption> CarClasses { get; }
+
     public ObservableCollection<DriverPlan> Drivers { get; }
 
     public ObservableCollection<StintPlan> Stints { get; }
+
+    public ObservableCollection<PlanTimelineRow> PlanTimelineRows { get; }
 
     public ReadOnlyCollection<TimeZoneInfo> TimeZones => _timeZones;
 
@@ -94,6 +101,23 @@ public sealed class MainViewModel : BindableBase
     }
 
     public string TrackName => SelectedTrack?.Name ?? "Track not selected";
+
+    public CarClassOption? SelectedCarClass
+    {
+        get => _selectedCarClass;
+        set
+        {
+            if (SetProperty(ref _selectedCarClass, value))
+            {
+                OnPropertyChanged(nameof(ShowFuelCapacity));
+                OnPropertyChanged(nameof(ShowFuelPerLap));
+            }
+        }
+    }
+
+    public bool ShowFuelCapacity => SelectedCarClass?.FuelMode == FuelFieldMode.CapacityAndPerLap;
+
+    public bool ShowFuelPerLap => SelectedCarClass?.FuelMode is FuelFieldMode.CapacityAndPerLap or FuelFieldMode.PerLapOnly;
 
     public int RaceLengthHours
     {
@@ -161,16 +185,10 @@ public sealed class MainViewModel : BindableBase
         set => SetProperty(ref _basePitSeconds, Math.Max(0, value));
     }
 
-    public double RefuelSecondsPerUnit
+    public double FullRefillSeconds
     {
-        get => _refuelSecondsPerUnit;
-        set => SetProperty(ref _refuelSecondsPerUnit, Math.Max(0, value));
-    }
-
-    public double EnergySecondsPerUnit
-    {
-        get => _energySecondsPerUnit;
-        set => SetProperty(ref _energySecondsPerUnit, Math.Max(0, value));
+        get => _fullRefillSeconds;
+        set => SetProperty(ref _fullRefillSeconds, Math.Max(0, value));
     }
 
     public double TyreChangeSeconds
@@ -179,16 +197,10 @@ public sealed class MainViewModel : BindableBase
         set => SetProperty(ref _tyreChangeSeconds, Math.Max(0, value));
     }
 
-    public int TotalTyreSets
+    public int AvailableTyres
     {
-        get => _totalTyreSets;
-        set => SetProperty(ref _totalTyreSets, Math.Max(1, value));
-    }
-
-    public int TyreSetLapLimit
-    {
-        get => _tyreSetLapLimit;
-        set => SetProperty(ref _tyreSetLapLimit, Math.Max(1, value));
+        get => _availableTyres;
+        set => SetProperty(ref _availableTyres, Math.Max(1, value));
     }
 
     public double DefaultRepairSeconds
@@ -323,6 +335,18 @@ public sealed class MainViewModel : BindableBase
         }
     }
 
+    public PlanTimelineRow? SelectedTimelineRow
+    {
+        get => _selectedTimelineRow;
+        set
+        {
+            if (SetProperty(ref _selectedTimelineRow, value))
+            {
+                SelectedStint = value?.SourceStint;
+            }
+        }
+    }
+
     protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         base.OnPropertyChanged(propertyName);
@@ -338,7 +362,9 @@ public sealed class MainViewModel : BindableBase
             or nameof(RainCrossoverSummary)
             or nameof(RainCrossoverRecommendation)
             or nameof(SelectedStint)
-            or nameof(TrackName))
+            or nameof(TrackName)
+            or nameof(ShowFuelCapacity)
+            or nameof(ShowFuelPerLap))
         {
             return;
         }
@@ -378,7 +404,7 @@ public sealed class MainViewModel : BindableBase
     private void AddDriver()
     {
         var defaultZone = _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id;
-        AddDriverInternal(new DriverPlan($"Driver {Drivers.Count + 1}", "03:30.000", defaultZone, 29));
+        AddDriverInternal(new DriverPlan($"Driver {Drivers.Count + 1}", "03:30.000", defaultZone, 4, 3.3));
         RefreshPlan();
     }
 
@@ -407,7 +433,7 @@ public sealed class MainViewModel : BindableBase
     private void AddManualStint()
     {
         var driver = Stints.LastOrDefault()?.Driver ?? Drivers.FirstOrDefault();
-        var laps = driver?.MaxStintLaps > 0 ? Math.Min(driver.MaxStintLaps, 10) : 10;
+        var laps = 10;
 
         var newStint = new StintPlan
         {
@@ -416,6 +442,7 @@ public sealed class MainViewModel : BindableBase
             Laps = laps,
             RefuelAmount = FuelPerLap * laps,
             EnergyAmount = EnergyPerLap * laps,
+            AutoFillEnergyForNextStint = true,
             RepairSeconds = DefaultRepairSeconds
         };
 
@@ -440,12 +467,12 @@ public sealed class MainViewModel : BindableBase
     private void GenerateStrategy()
     {
         var activeDrivers = Drivers
-            .Where(d => !string.IsNullOrWhiteSpace(d.Name) && d.TryGetLapTime(out _))
+            .Where(d => !string.IsNullOrWhiteSpace(d.Name) && d.TryGetLapTime(out _) && d.EnergyPerLap > 0)
             .ToList();
 
         if (activeDrivers.Count == 0)
         {
-            SummaryText = "Add at least one driver with a valid lap time to generate the stint plan.";
+            SummaryText = "Add at least one driver with a valid lap time and VE per lap to generate the stint plan.";
             WarningText = string.Empty;
             ReplaceStints([]);
             UpdateRaceStartSummary();
@@ -453,7 +480,7 @@ public sealed class MainViewModel : BindableBase
         }
 
         var maxFuelLaps = GetCapacityLaps(FuelCapacity, FuelPerLap);
-        var maxEnergyLaps = GetCapacityLaps(EnergyCapacity, EnergyPerLap);
+        var maxEnergyLaps = activeDrivers.Max(driver => GetCapacityLaps(EnergyCapacity, driver.EnergyPerLap));
         var maxResourceLaps = Math.Min(maxFuelLaps, maxEnergyLaps);
 
         if (maxResourceLaps < 1)
@@ -472,14 +499,23 @@ public sealed class MainViewModel : BindableBase
         var generated = new List<StintPlan>();
         var remainingLaps = estimatedLaps;
         var driverIndex = 0;
-        var tyreSetNumber = 1;
-        var lapsOnTyres = 0;
+            var tyreSetNumber = 1;
+            var driverStintCounts = activeDrivers.ToDictionary(driver => driver, _ => 0);
 
         while (remainingLaps > 0)
         {
-            var driver = activeDrivers[driverIndex % activeDrivers.Count];
-            var driverLimit = driver.MaxStintLaps > 0 ? driver.MaxStintLaps : int.MaxValue;
-            var stintCap = Math.Min(maxResourceLaps, driverLimit);
+            var availableDrivers = activeDrivers
+                .Where(driver => driver.MaxStints <= 0 || driverStintCounts[driver] < driver.MaxStints)
+                .ToList();
+
+            if (availableDrivers.Count == 0)
+            {
+                break;
+            }
+
+            var driver = availableDrivers[driverIndex % availableDrivers.Count];
+            var driverEnergyLaps = GetCapacityLaps(EnergyCapacity, driver.EnergyPerLap);
+            var stintCap = Math.Min(maxFuelLaps, driverEnergyLaps);
             var stintLaps = Math.Max(1, Math.Min(stintCap, remainingLaps));
 
             if (remainingLaps > stintLaps && remainingLaps - stintLaps < Math.Min(stintCap, 3))
@@ -492,13 +528,15 @@ public sealed class MainViewModel : BindableBase
                 Number = generated.Count + 1,
                 Driver = driver,
                 Laps = stintLaps,
+                AutoFillEnergyForNextStint = true,
+                GetQualiTyres = generated.Count == 0,
                 RepairSeconds = DefaultRepairSeconds,
                 TyreSetNumber = tyreSetNumber
             };
 
             generated.Add(stint);
+            driverStintCounts[driver]++;
             remainingLaps -= stintLaps;
-            lapsOnTyres += stintLaps;
             driverIndex++;
 
             if (remainingLaps <= 0)
@@ -506,19 +544,12 @@ public sealed class MainViewModel : BindableBase
                 continue;
             }
 
-            var nextDriver = activeDrivers[driverIndex % activeDrivers.Count];
-            var nextLimit = nextDriver.MaxStintLaps > 0 ? nextDriver.MaxStintLaps : int.MaxValue;
-            var nextStintLaps = Math.Max(1, Math.Min(Math.Min(maxResourceLaps, nextLimit), remainingLaps));
+            var nextDriver = availableDrivers[(driverIndex) % availableDrivers.Count];
+            var nextStintCap = Math.Min(maxFuelLaps, GetCapacityLaps(EnergyCapacity, nextDriver.EnergyPerLap));
+            var nextStintLaps = Math.Max(1, Math.Min(nextStintCap, remainingLaps));
 
             stint.RefuelAmount = Math.Min(FuelCapacity, nextStintLaps * FuelPerLap);
-            stint.EnergyAmount = Math.Min(EnergyCapacity, nextStintLaps * EnergyPerLap);
-
-            if (lapsOnTyres + nextStintLaps > TyreSetLapLimit && tyreSetNumber < TotalTyreSets)
-            {
-                stint.ChangeTyres = true;
-                tyreSetNumber++;
-                lapsOnTyres = 0;
-            }
+            stint.EnergyAmount = Math.Min(EnergyCapacity, nextStintLaps * nextDriver.EnergyPerLap);
         }
 
         ReplaceStints(generated);
@@ -545,13 +576,29 @@ public sealed class MainViewModel : BindableBase
             var totalDrive = TimeSpan.Zero;
             var totalPit = TimeSpan.Zero;
             var totalLaps = 0;
-            var tyreSet = 1;
-            var lapsOnCurrentTyreSet = 0;
+            var tyreSet = GetInitialTyreSetNumber();
+            var driverStintCounts = new Dictionary<DriverPlan, int>();
+            var totalTyreSetsUsed = Math.Max(0, tyreSet);
+
+            foreach (var driver in Drivers)
+            {
+                driver.AssignedStints = 0;
+            }
 
             foreach (var stint in Stints)
             {
                 totalLaps += Math.Max(0, stint.Laps);
                 stint.TyreSetNumber = tyreSet;
+                stint.CanChangeTyres = stint.ChangeTyres || tyreSet < AvailableTyres;
+
+                if (stint.AutoFillEnergyForNextStint)
+                {
+                    var nextStint = Stints.SkipWhile(current => !ReferenceEquals(current, stint)).Skip(1).FirstOrDefault();
+                    var nextStintEnergyNeed = nextStint is null || nextStint.Driver is null
+                        ? 0
+                        : nextStint.Laps * nextStint.Driver.EnergyPerLap;
+                    stint.EnergyAmount = Math.Min(EnergyCapacity, Math.Max(0, nextStintEnergyNeed));
+                }
 
                 if (stint.Driver is null || !stint.Driver.TryGetLapTime(out var lapTime))
                 {
@@ -559,10 +606,22 @@ public sealed class MainViewModel : BindableBase
                     continue;
                 }
 
+                if (stint.Driver.EnergyPerLap <= 0)
+                {
+                    stint.ValidationNote = $"Driver {stint.Driver.Name} needs a valid VE per lap value.";
+                    continue;
+                }
+
+                if (!driverStintCounts.TryAdd(stint.Driver, 1))
+                {
+                    driverStintCounts[stint.Driver]++;
+                }
+                stint.Driver.AssignedStints = driverStintCounts[stint.Driver];
+
                 var driveTime = TimeSpan.FromTicks(lapTime.Ticks * Math.Max(0, stint.Laps));
                 var serviceSeconds = BasePitSeconds
-                    + (stint.RefuelAmount * RefuelSecondsPerUnit)
-                    + (stint.EnergyAmount * EnergySecondsPerUnit)
+                    + GetRefillTimeSeconds(stint.RefuelAmount, FuelCapacity)
+                    + GetRefillTimeSeconds(stint.EnergyAmount, EnergyCapacity)
                     + stint.RepairSeconds
                     + (stint.ChangeTyres ? TyreChangeSeconds : 0);
 
@@ -586,21 +645,33 @@ public sealed class MainViewModel : BindableBase
                     stint.DriverLocalWindowText = "Invalid time zone";
                 }
 
-                lapsOnCurrentTyreSet += stint.Laps;
-                stint.ValidationNote = BuildValidationNote(stint, lapsOnCurrentTyreSet, tyreSet);
+                stint.ValidationNote = BuildValidationNote(stint, tyreSet, driverStintCounts[stint.Driver]);
                 totalDrive += driveTime;
                 totalPit += stint == Stints.Last() ? TimeSpan.Zero : totalPitTime;
 
                 if (stint.ChangeTyres)
                 {
                     tyreSet++;
-                    lapsOnCurrentTyreSet = 0;
                 }
             }
 
-            if (tyreSet > TotalTyreSets)
+            UpdateAvailableDrivers(driverStintCounts);
+            RebuildTimelineRows();
+
+            totalTyreSetsUsed = Math.Max(0, tyreSet);
+
+            if (totalTyreSetsUsed > AvailableTyres)
             {
-                warnings.Add("Planned tyre changes exceed the tyre sets available.");
+                warnings.Add("Planned tyre changes exceed the available tyre sets for this race.");
+            }
+
+            var overAssignedDrivers = driverStintCounts
+                .Where(entry => entry.Key.MaxStints > 0 && entry.Value > entry.Key.MaxStints)
+                .Select(entry => $"{entry.Key.Name} {entry.Value}/{entry.Key.MaxStints}")
+                .ToList();
+            if (overAssignedDrivers.Count > 0)
+            {
+                warnings.Add($"Driver stint cap exceeded: {string.Join(", ", overAssignedDrivers)}.");
             }
 
             var raceDuration = GetRaceDuration();
@@ -615,9 +686,13 @@ public sealed class MainViewModel : BindableBase
             }
 
             SummaryText =
-                $"Track: {TrackName} | Mode: {(AutoGeneratePlan ? "Auto-generate" : "Live strategy")} | " +
-                $"Race: {raceDuration:hh\\:mm} | Stints: {Stints.Count} | Laps: {totalLaps} | " +
-                $"Tyre sets used: {Math.Min(tyreSet, TotalTyreSets)}/{TotalTyreSets} | Finish: {projectedFinish:hh\\:mm\\:ss}";
+                $"Track: {TrackName}\n" +
+                $"Mode: {(AutoGeneratePlan ? "Auto-generate" : "Live strategy")}\n" +
+                $"Race Length: {raceDuration:hh\\:mm}\n" +
+                $"Total Race Laps: {totalLaps}\n" +
+                $"Planned Stints: {Stints.Count}\n" +
+                $"Tyre Sets Used: {totalTyreSetsUsed}/{AvailableTyres}\n" +
+                $"Projected Finish: {projectedFinish:hh\\:mm\\:ss}";
 
             WarningText = warnings.Count > 0
                 ? string.Join(" ", warnings)
@@ -629,39 +704,99 @@ public sealed class MainViewModel : BindableBase
         }
     }
 
-    private string BuildValidationNote(StintPlan stint, int lapsOnCurrentTyreSet, int tyreSet)
+    private void UpdateAvailableDrivers(Dictionary<DriverPlan, int> driverStintCounts)
+    {
+        foreach (var stint in Stints)
+        {
+            var availableDrivers = Drivers
+                .Where(driver =>
+                {
+                    var assigned = driverStintCounts.GetValueOrDefault(driver);
+                    if (ReferenceEquals(driver, stint.Driver))
+                    {
+                        assigned--;
+                    }
+
+                    return driver.MaxStints <= 0 || assigned < driver.MaxStints;
+                })
+                .ToList();
+
+            stint.SetAvailableDrivers(availableDrivers);
+        }
+    }
+
+    private void RebuildTimelineRows()
+    {
+        var selectedStint = SelectedTimelineRow?.SourceStint ?? SelectedStint;
+
+        PlanTimelineRows.Clear();
+
+        foreach (var stint in Stints)
+        {
+            PlanTimelineRows.Add(PlanTimelineRow.ForStint(stint));
+
+            if (stint != Stints.Last())
+            {
+                PlanTimelineRows.Add(PlanTimelineRow.ForPitStop(stint));
+            }
+        }
+
+        SelectedTimelineRow = PlanTimelineRows.FirstOrDefault(row => ReferenceEquals(row.SourceStint, selectedStint));
+    }
+
+    private double GetRefillTimeSeconds(double amount, double capacity)
+    {
+        if (capacity <= 0 || amount <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Min(1, amount / capacity) * FullRefillSeconds;
+    }
+
+    private int GetInitialTyreSetNumber()
+    {
+        if (Stints.Count == 0)
+        {
+            return 0;
+        }
+
+        return Stints[0].GetQualiTyres ? 1 : 2;
+    }
+
+    private string BuildValidationNote(StintPlan stint, int tyreSet, int driverAssignedStints)
     {
         var notes = new List<string>();
 
         if (stint.Driver is null)
         {
-            notes.Add("no driver");
+            notes.Add("No driver is assigned to this stint.");
         }
-        else if (stint.Driver.MaxStintLaps > 0 && stint.Laps > stint.Driver.MaxStintLaps)
+        else if (stint.Driver.MaxStints > 0 && driverAssignedStints > stint.Driver.MaxStints)
         {
-            notes.Add($"driver max {stint.Driver.MaxStintLaps}");
+            notes.Add($"Driver {stint.Driver.Name} is assigned to {driverAssignedStints} stints, above the allowed cap of {stint.Driver.MaxStints}.");
+        }
+
+        if (stint.Driver is not null && stint.Driver.EnergyPerLap <= 0)
+        {
+            notes.Add($"Driver {stint.Driver.Name} needs a VE per lap value above zero.");
         }
 
         var fuelNeed = stint.Laps * FuelPerLap;
         if (FuelPerLap > 0 && fuelNeed > FuelCapacity)
         {
-            notes.Add($"fuel {fuelNeed:F1}>{FuelCapacity:F1}");
+            notes.Add($"Fuel needed for this stint is {fuelNeed:F1}, which exceeds the configured fuel capacity of {FuelCapacity:F1}.");
         }
 
-        var energyNeed = stint.Laps * EnergyPerLap;
-        if (EnergyPerLap > 0 && energyNeed > EnergyCapacity)
+        var energyNeed = stint.Driver is null ? 0 : stint.Laps * stint.Driver.EnergyPerLap;
+        if (stint.Driver is not null && stint.Driver.EnergyPerLap > 0 && energyNeed > EnergyCapacity)
         {
-            notes.Add($"VE {energyNeed:F1}>{EnergyCapacity:F1}");
+            notes.Add($"VE needed for this stint is {energyNeed:F1}, which exceeds the configured VE capacity of {EnergyCapacity:F1}.");
         }
 
-        if (lapsOnCurrentTyreSet > TyreSetLapLimit)
+        if (tyreSet > AvailableTyres)
         {
-            notes.Add($"tyres {lapsOnCurrentTyreSet}>{TyreSetLapLimit} laps");
-        }
-
-        if (tyreSet > TotalTyreSets)
-        {
-            notes.Add("tyre set limit hit");
+            notes.Add("This tyre change would use more tyre sets than are available for the race.");
         }
 
         return string.Join(", ", notes);
@@ -776,6 +911,18 @@ public sealed class MainViewModel : BindableBase
         ];
     }
 
+    private static IEnumerable<CarClassOption> CreateCarClasses()
+    {
+        return
+        [
+            new("Hypercar", FuelFieldMode.Hidden),
+            new("LMGT3", FuelFieldMode.Hidden),
+            new("LMP2", FuelFieldMode.PerLapOnly),
+            new("LMP3", FuelFieldMode.PerLapOnly),
+            new("GTE", FuelFieldMode.PerLapOnly)
+        ];
+    }
+
     private TimeSpan GetRaceDuration()
     {
         return TimeSpan.FromHours(Math.Max(0, RaceLengthHours)) + TimeSpan.FromMinutes(Math.Clamp(RaceLengthMinutes, 0, 59));
@@ -857,6 +1004,11 @@ public sealed class MainViewModel : BindableBase
 
     private void OnDriverPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (_isApplyingCalculatedValues || e.PropertyName == nameof(DriverPlan.AssignedStints))
+        {
+            return;
+        }
+
         RefreshPlan();
     }
 
@@ -872,6 +1024,9 @@ public sealed class MainViewModel : BindableBase
             or nameof(StintPlan.PitLaneTime)
             or nameof(StintPlan.ServiceTime)
             or nameof(StintPlan.TotalPitTime)
+            or nameof(StintPlan.CanChangeTyres)
+            or nameof(StintPlan.RaceStart)
+            or nameof(StintPlan.RaceEnd)
             or nameof(StintPlan.DrivingTimeText)
             or nameof(StintPlan.PitLaneTimeText)
             or nameof(StintPlan.ServiceTimeText)
@@ -907,19 +1062,42 @@ public sealed class TrackOption
     public string DisplayName => $"{Name} ({Source})";
 }
 
+public sealed class CarClassOption
+{
+    public CarClassOption(string name, FuelFieldMode fuelMode)
+    {
+        Name = name;
+        FuelMode = fuelMode;
+    }
+
+    public string Name { get; }
+
+    public FuelFieldMode FuelMode { get; }
+}
+
+public enum FuelFieldMode
+{
+    Hidden,
+    PerLapOnly,
+    CapacityAndPerLap
+}
+
 public sealed class DriverPlan : BindableBase
 {
     private string _name;
     private string _lapTimeText;
     private string _timeZoneId;
-    private int _maxStintLaps;
+    private int _maxStints;
+    private int _assignedStints;
+    private double _energyPerLap;
 
-    public DriverPlan(string name, string lapTimeText, string timeZoneId, int maxStintLaps)
+    public DriverPlan(string name, string lapTimeText, string timeZoneId, int maxStints, double energyPerLap)
     {
         _name = name;
         _lapTimeText = lapTimeText;
         _timeZoneId = timeZoneId;
-        _maxStintLaps = maxStintLaps;
+        _maxStints = maxStints;
+        _energyPerLap = energyPerLap;
     }
 
     public string Name
@@ -940,10 +1118,22 @@ public sealed class DriverPlan : BindableBase
         set => SetProperty(ref _timeZoneId, value);
     }
 
-    public int MaxStintLaps
+    public int MaxStints
     {
-        get => _maxStintLaps;
-        set => SetProperty(ref _maxStintLaps, Math.Max(0, value));
+        get => _maxStints;
+        set => SetProperty(ref _maxStints, Math.Max(0, value));
+    }
+
+    public int AssignedStints
+    {
+        get => _assignedStints;
+        set => SetProperty(ref _assignedStints, Math.Max(0, value));
+    }
+
+    public double EnergyPerLap
+    {
+        get => _energyPerLap;
+        set => SetProperty(ref _energyPerLap, Math.Max(0, value));
     }
 
     public TimeSpan ParsedLapTime => TryGetLapTime(out var lapTime) ? lapTime : TimeSpan.Zero;
@@ -980,6 +1170,8 @@ public sealed class StintPlan : BindableBase
     private int _laps;
     private double _refuelAmount;
     private double _energyAmount;
+    private bool _autoFillEnergyForNextStint = true;
+    private bool _getQualiTyres;
     private bool _changeTyres;
     private double _repairSeconds;
     private TimeSpan _drivingTime;
@@ -991,6 +1183,8 @@ public sealed class StintPlan : BindableBase
     private string _driverLocalWindowText = string.Empty;
     private string _validationNote = string.Empty;
     private int _tyreSetNumber = 1;
+    private ObservableCollection<DriverPlan> _availableDrivers = [];
+    private bool _canChangeTyres = true;
 
     public int Number
     {
@@ -1020,6 +1214,18 @@ public sealed class StintPlan : BindableBase
     {
         get => _energyAmount;
         set => SetProperty(ref _energyAmount, Math.Max(0, value));
+    }
+
+    public bool AutoFillEnergyForNextStint
+    {
+        get => _autoFillEnergyForNextStint;
+        set => SetProperty(ref _autoFillEnergyForNextStint, value);
+    }
+
+    public bool GetQualiTyres
+    {
+        get => _getQualiTyres;
+        set => SetProperty(ref _getQualiTyres, value);
     }
 
     public bool ChangeTyres
@@ -1124,6 +1330,18 @@ public sealed class StintPlan : BindableBase
         set => SetProperty(ref _tyreSetNumber, value);
     }
 
+    public ObservableCollection<DriverPlan> AvailableDrivers
+    {
+        get => _availableDrivers;
+        private set => SetProperty(ref _availableDrivers, value);
+    }
+
+    public bool CanChangeTyres
+    {
+        get => _canChangeTyres;
+        set => SetProperty(ref _canChangeTyres, value);
+    }
+
     public string DrivingTimeText => DrivingTime.ToString(@"hh\:mm\:ss");
 
     public string PitLaneTimeText => PitLaneTime.ToString(@"mm\:ss");
@@ -1135,6 +1353,221 @@ public sealed class StintPlan : BindableBase
     public string RaceStartClockText => RaceStart == default ? string.Empty : RaceStart.ToString("ddd HH:mm");
 
     public string RaceEndClockText => RaceEnd == default ? string.Empty : RaceEnd.ToString("ddd HH:mm");
+
+    public void SetAvailableDrivers(IEnumerable<DriverPlan> drivers)
+    {
+        AvailableDrivers = new ObservableCollection<DriverPlan>(drivers);
+    }
+}
+
+public sealed class PlanTimelineRow : BindableBase
+{
+    private static readonly (string Card, string Chip, string Soft, string Strong)[] DriverPalette =
+    [
+        ("#E7F3EC", "#2F6B45", "#F5FBF7", "#1E4A30"),
+        ("#EAF2FB", "#2E5D93", "#F6FAFE", "#1E3E63"),
+        ("#FBEEDC", "#9A5A1A", "#FFF8F0", "#6B3D10"),
+        ("#F5EAF8", "#7A3E8E", "#FBF6FD", "#542A63"),
+        ("#FCEBEC", "#9A3D47", "#FFF7F8", "#6C2931"),
+        ("#EAF7F6", "#24766C", "#F5FCFB", "#184F49")
+    ];
+
+    private PlanTimelineRow(StintPlan sourceStint, bool isPitStop)
+    {
+        SourceStint = sourceStint;
+        IsPitStop = isPitStop;
+    }
+
+    public StintPlan SourceStint { get; }
+
+    public bool IsPitStop { get; }
+
+    public static PlanTimelineRow ForStint(StintPlan stint) => new(stint, false);
+
+    public static PlanTimelineRow ForPitStop(StintPlan stint) => new(stint, true);
+
+    public string RowType => IsPitStop ? "Pit Stop" : "Stint";
+
+    public string NumberText => IsPitStop ? $"P{SourceStint.Number}" : SourceStint.Number.ToString();
+
+    public bool IsFirstStint => SourceStint.Number == 1;
+
+    public DriverPlan? Driver
+    {
+        get => SourceStint.Driver;
+        set
+        {
+            if (IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.Driver = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<DriverPlan> AvailableDrivers => SourceStint.AvailableDrivers;
+
+    public int Laps
+    {
+        get => SourceStint.Laps;
+        set
+        {
+            if (IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.Laps = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool GetQualiTyres
+    {
+        get => SourceStint.GetQualiTyres;
+        set
+        {
+            if (IsPitStop || !IsFirstStint)
+            {
+                return;
+            }
+
+            SourceStint.GetQualiTyres = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double RefuelAmount
+    {
+        get => SourceStint.RefuelAmount;
+        set
+        {
+            if (!IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.RefuelAmount = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double EnergyAmount
+    {
+        get => SourceStint.EnergyAmount;
+        set
+        {
+            if (!IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.EnergyAmount = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool ChangeTyres
+    {
+        get => SourceStint.ChangeTyres;
+        set
+        {
+            if (!IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.ChangeTyres = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool CanChangeTyres => SourceStint.CanChangeTyres;
+
+    public double RepairSeconds
+    {
+        get => SourceStint.RepairSeconds;
+        set
+        {
+            if (!IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.RepairSeconds = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string DriverName => IsPitStop
+        ? $"{SourceStint.Driver?.Name ?? "No Driver"} pit stop"
+        : SourceStint.Driver?.Name ?? "No Driver";
+
+    public string StintCardBackground => GetDriverColorSet().Card;
+
+    public string StintBadgeBackground => GetDriverColorSet().Chip;
+
+    public string StintBadgeForeground => "#FFFDFD";
+
+    public string StintChipBackground => GetDriverColorSet().Soft;
+
+    public string StintAccentForeground => GetDriverColorSet().Strong;
+
+    public string MainTimeText => IsPitStop ? SourceStint.TotalPitTimeText : SourceStint.DrivingTimeText;
+
+    public string RaceStartText => IsPitStop
+        ? SourceStint.RaceEnd.ToString("ddd HH:mm")
+        : SourceStint.RaceStartClockText;
+
+    public string RaceEndText => IsPitStop
+        ? (SourceStint.RaceEnd + SourceStint.TotalPitTime).ToString("ddd HH:mm")
+        : SourceStint.RaceEndClockText;
+
+    public string DriverLocalText => IsPitStop ? string.Empty : SourceStint.DriverLocalWindowText;
+
+    public string PitLaneText => IsPitStop ? SourceStint.PitLaneTimeText : string.Empty;
+
+    public string ServiceText => IsPitStop ? SourceStint.ServiceTimeText : string.Empty;
+
+    public string TotalPitText => IsPitStop ? SourceStint.TotalPitTimeText : string.Empty;
+
+    public string TyreSetText => SourceStint.TyreSetNumber.ToString();
+
+    public bool AutoFillEnergyForNextStint
+    {
+        get => SourceStint.AutoFillEnergyForNextStint;
+        set
+        {
+            if (!IsPitStop)
+            {
+                return;
+            }
+
+            SourceStint.AutoFillEnergyForNextStint = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string Notes => SourceStint.ValidationNote;
+
+    private (string Card, string Chip, string Soft, string Strong) GetDriverColorSet()
+    {
+        if (IsPitStop)
+        {
+            return ("#F3E1E4", "#8B1E2D", "#FDF5F6", "#5E2A31");
+        }
+
+        var key = SourceStint.Driver?.Name;
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return DriverPalette[0];
+        }
+
+        var index = Math.Abs(StringComparer.OrdinalIgnoreCase.GetHashCode(key)) % DriverPalette.Length;
+        return DriverPalette[index];
+    }
 }
 
 public abstract class BindableBase : INotifyPropertyChanged

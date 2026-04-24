@@ -1,4 +1,3 @@
-D:\Projects\StintPlanner\LMUStintPlanner\bin\Debug\net10.0-windows\LMUStintPlanner.exe
 D:\Projects\StintPlanner\LMUStintPlanner\bin\Debug\net10.0-windows\LMUStintPlanner.deps.json
 D:\Projects\StintPlanner\LMUStintPlanner\bin\Debug\net10.0-windows\LMUStintPlanner.runtimeconfig.json
 D:\Projects\StintPlanner\LMUStintPlanner\bin\Debug\net10.0-windows\LMUStintPlanner.dll
@@ -17,3 +16,5 @@ D:\Projects\StintPlanner\LMUStintPlanner\obj\Debug\net10.0-windows\refint\LMUSti
 D:\Projects\StintPlanner\LMUStintPlanner\obj\Debug\net10.0-windows\LMUStintPlanner.pdb
 D:\Projects\StintPlanner\LMUStintPlanner\obj\Debug\net10.0-windows\LMUStintPlanner.genruntimeconfig.cache
 D:\Projects\StintPlanner\LMUStintPlanner\obj\Debug\net10.0-windows\ref\LMUStintPlanner.dll
+D:\Projects\StintPlanner\LMUStintPlanner\obj\Debug\net10.0-windows\LMUStintPlanner.sourcelink.json
+D:\Projects\StintPlanner\LMUStintPlanner\bin\Debug\net10.0-windows\LMUStintPlanner.exe

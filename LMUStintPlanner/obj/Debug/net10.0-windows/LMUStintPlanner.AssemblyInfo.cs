@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LMUStintPlanner")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e6efe13919be758fbe91da6563c799d830abeaaf")]
 [assembly: System.Reflection.AssemblyProductAttribute("LMUStintPlanner")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LMUStintPlanner")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
