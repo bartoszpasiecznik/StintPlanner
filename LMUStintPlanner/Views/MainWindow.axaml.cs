@@ -1,6 +1,7 @@
-using System.Windows;
+using Avalonia.Controls;
+using LMUStintPlanner.ViewModels;
 
-namespace LMUStintPlanner;
+namespace LMUStintPlanner.Views;
 
 public partial class MainWindow : Window
 {

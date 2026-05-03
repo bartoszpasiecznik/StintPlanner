@@ -5,45 +5,17 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-namespace LMUStintPlanner;
+namespace LMUStintPlanner.ViewModels;
 
 public sealed class MainViewModel : BindableBase
 {
-    private readonly ReadOnlyCollection<TimeZoneInfo> _timeZones;
     private bool _isApplyingCalculatedValues;
-    private TrackOption? _selectedTrack;
-    private CarClassOption? _selectedCarClass;
-    private int _raceLengthHours = 6;
-    private int _raceLengthMinutes;
-    private string _raceStartText = "2026-06-13 16:00";
-    private string _raceTimeZoneId = TimeZoneInfo.Local.Id;
-    private bool _autoGeneratePlan = true;
-    private double _fuelCapacity = 90;
-    private double _fuelPerLap = 3.1;
-    private double _energyCapacity = 100;
-    private double _energyPerLap = 3.3;
-    private double _pitLaneSeconds = 44;
-    private double _basePitSeconds = 18;
-    private double _fullRefillSeconds = 35;
-    private double _tyreChangeSeconds = 24;
-    private int _availableTyres = 7;
-    private double _defaultRepairSeconds;
-    private string _summaryText = string.Empty;
-    private string _warningText = string.Empty;
-    private string _raceStartSummary = string.Empty;
-    private string _currentDryLapTimeText = "03:30.000";
-    private string _currentWetLapTimeText = "03:40.000";
-    private int _remainingStintLaps = 5;
-    private double _remainingStintFuel = 15.5;
-    private PlanTimelineRow? _selectedTimelineRow;
-    private StintPlan? _selectedStint;
 
     public MainViewModel()
     {
-        _timeZones = TimeZoneInfo.GetSystemTimeZones();
-        Drivers = new ObservableCollection<DriverPlan>();
-        Stints = new ObservableCollection<StintPlan>();
-        PlanTimelineRows = new ObservableCollection<PlanTimelineRow>();
+        TimeZones = TimeZoneInfo.GetSystemTimeZones();
+        Drivers = [];
+        Stints = [];
         Tracks = new ObservableCollection<TrackOption>(CreateTrackOptions());
         CarClasses = new ObservableCollection<CarClassOption>(CreateCarClasses());
 
@@ -51,14 +23,20 @@ public sealed class MainViewModel : BindableBase
         Stints.CollectionChanged += OnStintsCollectionChanged;
 
         SelectedTrack = Tracks.FirstOrDefault(track => track.Name == "Circuit de la Sarthe") ?? Tracks.FirstOrDefault();
-        SelectedCarClass = CarClasses.FirstOrDefault(carClass => carClass.Name == "Hypercar") ?? CarClasses.FirstOrDefault();
+        SelectedCarClass = CarClasses.FirstOrDefault(carClass => carClass.Name == "Hypercar") ??
+                           CarClasses.FirstOrDefault();
+        SelectedRaceTimeZone = TimeZones.FirstOrDefault(tz => tz.Id == RaceTimeZoneId) ?? TimeZones.FirstOrDefault();
 
-        AddDriverInternal(new DriverPlan("Driver 1", "03:30.500", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.3));
-        AddDriverInternal(new DriverPlan("Driver 2", "03:31.200", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.2));
-        AddDriverInternal(new DriverPlan("Driver 3", "03:29.800", _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.4));
+        AddDriverInternal(new DriverPlan("Driver 1", "03:30.500",
+            TimeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.3));
+        AddDriverInternal(new DriverPlan("Driver 2", "03:31.200",
+            TimeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.2));
+        AddDriverInternal(new DriverPlan("Driver 3", "03:29.800",
+            TimeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id, 4, 3.4));
 
         AddDriverCommand = new RelayCommand(_ => AddDriver());
-        RemoveDriverCommand = new RelayCommand(driver => RemoveDriver(driver as DriverPlan), driver => driver is DriverPlan);
+        RemoveDriverCommand =
+            new RelayCommand(driver => RemoveDriver(driver as DriverPlan), driver => driver is DriverPlan);
         GenerateStrategyCommand = new RelayCommand(_ => GenerateStrategy());
         AddManualStintCommand = new RelayCommand(_ => AddManualStint());
         RemoveSelectedStintCommand = new RelayCommand(_ => RemoveSelectedStint(), _ => SelectedStint is not null);
@@ -74,9 +52,9 @@ public sealed class MainViewModel : BindableBase
 
     public ObservableCollection<StintPlan> Stints { get; }
 
-    public ObservableCollection<PlanTimelineRow> PlanTimelineRows { get; }
+    public ObservableCollection<PlanTimelineRow> PlanTimelineRows { get; } = [];
 
-    public ReadOnlyCollection<TimeZoneInfo> TimeZones => _timeZones;
+    public ReadOnlyCollection<TimeZoneInfo> TimeZones { get; }
 
     public ICommand AddDriverCommand { get; }
 
@@ -90,10 +68,10 @@ public sealed class MainViewModel : BindableBase
 
     public TrackOption? SelectedTrack
     {
-        get => _selectedTrack;
+        get;
         set
         {
-            if (SetProperty(ref _selectedTrack, value))
+            if (SetProperty(ref field, value))
             {
                 OnPropertyChanged(nameof(TrackName));
             }
@@ -104,177 +82,194 @@ public sealed class MainViewModel : BindableBase
 
     public CarClassOption? SelectedCarClass
     {
-        get => _selectedCarClass;
-        set
+        get;
+        init
         {
-            if (SetProperty(ref _selectedCarClass, value))
-            {
-                OnPropertyChanged(nameof(ShowFuelCapacity));
-                OnPropertyChanged(nameof(ShowFuelPerLap));
-            }
+            if (!SetProperty(ref field, value)) return;
+            OnPropertyChanged(nameof(ShowFuelCapacity));
+            OnPropertyChanged(nameof(ShowFuelPerLap));
         }
     }
 
     public bool ShowFuelCapacity => SelectedCarClass?.FuelMode == FuelFieldMode.CapacityAndPerLap;
 
-    public bool ShowFuelPerLap => SelectedCarClass?.FuelMode is FuelFieldMode.CapacityAndPerLap or FuelFieldMode.PerLapOnly;
+    public bool ShowFuelPerLap =>
+        SelectedCarClass?.FuelMode is FuelFieldMode.CapacityAndPerLap or FuelFieldMode.PerLapOnly;
 
     public int RaceLengthHours
     {
-        get => _raceLengthHours;
-        set => SetProperty(ref _raceLengthHours, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 6;
 
     public int RaceLengthMinutes
     {
-        get => _raceLengthMinutes;
-        set => SetProperty(ref _raceLengthMinutes, Math.Clamp(value, 0, 59));
+        get;
+        set => SetProperty(ref field, Math.Clamp(value, 0, 59));
     }
 
     public string RaceStartText
     {
-        get => _raceStartText;
-        set => SetProperty(ref _raceStartText, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = "2026-06-13 16:00";
 
     public string RaceTimeZoneId
     {
-        get => _raceTimeZoneId;
-        set => SetProperty(ref _raceTimeZoneId, value);
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                SelectedRaceTimeZone = TimeZones.FirstOrDefault(tz => tz.Id == value) ?? TimeZones.FirstOrDefault();
+            }
+        }
+    } = TimeZoneInfo.Local.Id;
+
+    public TimeZoneInfo? SelectedRaceTimeZone
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                RaceTimeZoneId = value?.Id ?? TimeZoneInfo.Local.Id;
+            }
+        }
     }
 
     public bool AutoGeneratePlan
     {
-        get => _autoGeneratePlan;
-        set => SetProperty(ref _autoGeneratePlan, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = true;
 
     public double FuelCapacity
     {
-        get => _fuelCapacity;
-        set => SetProperty(ref _fuelCapacity, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 90;
 
     public double FuelPerLap
     {
-        get => _fuelPerLap;
-        set => SetProperty(ref _fuelPerLap, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 3.1;
 
     public double EnergyCapacity
     {
-        get => _energyCapacity;
-        set => SetProperty(ref _energyCapacity, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 100;
 
     public double EnergyPerLap
     {
-        get => _energyPerLap;
-        set => SetProperty(ref _energyPerLap, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 3.3;
 
     public double PitLaneSeconds
     {
-        get => _pitLaneSeconds;
-        set => SetProperty(ref _pitLaneSeconds, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 44;
 
     public double BasePitSeconds
     {
-        get => _basePitSeconds;
-        set => SetProperty(ref _basePitSeconds, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 18;
 
     public double FullRefillSeconds
     {
-        get => _fullRefillSeconds;
-        set => SetProperty(ref _fullRefillSeconds, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 35;
 
     public double TyreChangeSeconds
     {
-        get => _tyreChangeSeconds;
-        set => SetProperty(ref _tyreChangeSeconds, Math.Max(0, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
+    } = 24;
 
     public int AvailableTyres
     {
-        get => _availableTyres;
-        set => SetProperty(ref _availableTyres, Math.Max(1, value));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(1, value));
+    } = 7;
 
     public double DefaultRepairSeconds
     {
-        get => _defaultRepairSeconds;
-        set => SetProperty(ref _defaultRepairSeconds, Math.Max(0, value));
+        get;
+        set => SetProperty(ref field, Math.Max(0, value));
     }
 
     public string SummaryText
     {
-        get => _summaryText;
-        private set => SetProperty(ref _summaryText, value);
-    }
+        get;
+        private set => SetProperty(ref field, value);
+    } = string.Empty;
 
     public string WarningText
     {
-        get => _warningText;
-        private set => SetProperty(ref _warningText, value);
-    }
+        get;
+        private set => SetProperty(ref field, value);
+    } = string.Empty;
 
     public string RaceStartSummary
     {
-        get => _raceStartSummary;
-        private set => SetProperty(ref _raceStartSummary, value);
-    }
+        get;
+        private set => SetProperty(ref field, value);
+    } = string.Empty;
 
     public string CurrentDryLapTimeText
     {
-        get => _currentDryLapTimeText;
-        set => SetProperty(ref _currentDryLapTimeText, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = "03:30.000";
 
     public string CurrentWetLapTimeText
     {
-        get => _currentWetLapTimeText;
-        set => SetProperty(ref _currentWetLapTimeText, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = "03:40.000";
 
     public int RemainingStintLaps
     {
-        get => _remainingStintLaps;
+        get;
         set
         {
-            if (SetProperty(ref _remainingStintLaps, Math.Max(0, value)))
+            if (SetProperty(ref field, Math.Max(0, value)))
             {
                 OnPropertyChanged(nameof(RainCrossoverSummary));
                 OnPropertyChanged(nameof(RainCrossoverRecommendation));
             }
         }
-    }
+    } = 5;
 
     public double RemainingStintFuel
     {
-        get => _remainingStintFuel;
+        get;
         set
         {
-            if (SetProperty(ref _remainingStintFuel, Math.Max(0, value)))
+            if (SetProperty(ref field, Math.Max(0, value)))
             {
                 OnPropertyChanged(nameof(RainCrossoverSummary));
                 OnPropertyChanged(nameof(RainCrossoverRecommendation));
             }
         }
-    }
+    } = 15.5;
 
     public string RainCrossoverSummary
     {
         get
         {
-            if (!TryParseFlexibleLapTime(CurrentDryLapTimeText, out var dryLap))
+            if (!TryParseFlexibleLapTime(CurrentDryLapTimeText, out TimeSpan dryLap))
             {
                 return "Enter a valid dry lap time.";
             }
 
-            if (!TryParseFlexibleLapTime(CurrentWetLapTimeText, out var wetLap))
+            if (!TryParseFlexibleLapTime(CurrentWetLapTimeText, out TimeSpan wetLap))
             {
                 return "Enter a valid wet lap time.";
             }
@@ -284,9 +279,9 @@ public sealed class MainViewModel : BindableBase
                 return "No laps left in the stint.";
             }
 
-            var delta = wetLap - dryLap;
-            var totalDelta = TimeSpan.FromTicks(delta.Ticks * RemainingStintLaps);
-            var fuelWindow = FuelPerLap > 0
+            TimeSpan delta = wetLap - dryLap;
+            TimeSpan totalDelta = TimeSpan.FromTicks(delta.Ticks * RemainingStintLaps);
+            string fuelWindow = FuelPerLap > 0
                 ? $"{Math.Floor(RemainingStintFuel / FuelPerLap):0} dry laps of fuel at current burn"
                 : "fuel burn not set";
 
@@ -301,46 +296,43 @@ public sealed class MainViewModel : BindableBase
     {
         get
         {
-            if (!TryParseFlexibleLapTime(CurrentDryLapTimeText, out var dryLap) ||
-                !TryParseFlexibleLapTime(CurrentWetLapTimeText, out var wetLap) ||
+            if (!TryParseFlexibleLapTime(CurrentDryLapTimeText, out TimeSpan dryLap) ||
+                !TryParseFlexibleLapTime(CurrentWetLapTimeText, out TimeSpan wetLap) ||
                 RemainingStintLaps <= 0)
             {
                 return "Add valid lap times and laps left to calculate the crossover.";
             }
 
-            var delta = wetLap - dryLap;
+            TimeSpan delta = wetLap - dryLap;
             if (delta < TimeSpan.Zero)
             {
                 return $"Wet pace is quicker by {FormatSignedTime(-delta)} per lap. Crossing now favors wets.";
             }
 
-            if (delta == TimeSpan.Zero)
-            {
-                return "Dry and wet pace are equal. Cross based on traffic, radar, and pit window.";
-            }
-
-            return $"Dry pace is quicker by {FormatSignedTime(delta)} per lap. Staying out favors dries for now.";
+            return delta == TimeSpan.Zero
+                ? "Dry and wet pace are equal. Cross based on traffic, radar, and pit window."
+                : $"Dry pace is quicker by {FormatSignedTime(delta)} per lap. Staying out favors dries for now.";
         }
     }
 
     public StintPlan? SelectedStint
     {
-        get => _selectedStint;
+        get;
         set
         {
-            if (SetProperty(ref _selectedStint, value))
+            if (SetProperty(ref field, value))
             {
-                CommandManager.InvalidateRequerySuggested();
+                CommandManagerImpl.InvalidateRequerySuggested();
             }
         }
     }
 
     public PlanTimelineRow? SelectedTimelineRow
     {
-        get => _selectedTimelineRow;
+        get;
         set
         {
-            if (SetProperty(ref _selectedTimelineRow, value))
+            if (SetProperty(ref field, value))
             {
                 SelectedStint = value?.SourceStint;
             }
@@ -356,29 +348,24 @@ public sealed class MainViewModel : BindableBase
             return;
         }
 
-        if (propertyName is nameof(SummaryText)
-            or nameof(WarningText)
-            or nameof(RaceStartSummary)
-            or nameof(RainCrossoverSummary)
-            or nameof(RainCrossoverRecommendation)
-            or nameof(SelectedStint)
-            or nameof(TrackName)
-            or nameof(ShowFuelCapacity)
-            or nameof(ShowFuelPerLap))
+        switch (propertyName)
         {
-            return;
-        }
-
-        if (propertyName is nameof(CurrentDryLapTimeText) or nameof(CurrentWetLapTimeText))
-        {
-            OnPropertyChanged(nameof(RainCrossoverSummary));
-            OnPropertyChanged(nameof(RainCrossoverRecommendation));
-        }
-
-        if (propertyName == nameof(AutoGeneratePlan))
-        {
-            RefreshPlan();
-            return;
+            case nameof(SummaryText)
+                or nameof(WarningText)
+                or nameof(RaceStartSummary)
+                or nameof(RainCrossoverSummary)
+                or nameof(RainCrossoverRecommendation)
+                or nameof(SelectedStint)
+                or nameof(TrackName)
+                or nameof(ShowFuelCapacity)
+                or nameof(ShowFuelPerLap):
+                return;
+            case nameof(CurrentDryLapTimeText) or nameof(CurrentWetLapTimeText):
+                OnPropertyChanged(nameof(RainCrossoverSummary));
+                OnPropertyChanged(nameof(RainCrossoverRecommendation));
+                break;
+            case nameof(AutoGeneratePlan):
+                break;
         }
 
         RefreshPlan();
@@ -386,11 +373,6 @@ public sealed class MainViewModel : BindableBase
 
     private void RefreshPlan()
     {
-        if (Drivers is null || Stints is null || Tracks is null)
-        {
-            return;
-        }
-
         if (AutoGeneratePlan)
         {
             GenerateStrategy();
@@ -403,7 +385,7 @@ public sealed class MainViewModel : BindableBase
 
     private void AddDriver()
     {
-        var defaultZone = _timeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id;
+        string defaultZone = TimeZones.FirstOrDefault()?.Id ?? TimeZoneInfo.Local.Id;
         AddDriverInternal(new DriverPlan($"Driver {Drivers.Count + 1}", "03:30.000", defaultZone, 4, 3.3));
         RefreshPlan();
     }
@@ -422,7 +404,7 @@ public sealed class MainViewModel : BindableBase
 
         Drivers.Remove(driver);
 
-        foreach (var stint in Stints.Where(s => ReferenceEquals(s.Driver, driver)))
+        foreach (StintPlan stint in Stints.Where(s => ReferenceEquals(s.Driver, driver)))
         {
             stint.Driver = Drivers.FirstOrDefault();
         }
@@ -432,10 +414,10 @@ public sealed class MainViewModel : BindableBase
 
     private void AddManualStint()
     {
-        var driver = Stints.LastOrDefault()?.Driver ?? Drivers.FirstOrDefault();
-        var laps = 10;
+        DriverPlan? driver = Stints.LastOrDefault()?.Driver ?? Drivers.FirstOrDefault();
+        const int laps = 10;
 
-        var newStint = new StintPlan
+        StintPlan newStint = new()
         {
             Number = Stints.Count + 1,
             Driver = driver,
@@ -466,7 +448,7 @@ public sealed class MainViewModel : BindableBase
 
     private void GenerateStrategy()
     {
-        var activeDrivers = Drivers
+        List<DriverPlan> activeDrivers = Drivers
             .Where(d => !string.IsNullOrWhiteSpace(d.Name) && d.TryGetLapTime(out _) && d.EnergyPerLap > 0)
             .ToList();
 
@@ -479,9 +461,9 @@ public sealed class MainViewModel : BindableBase
             return;
         }
 
-        var maxFuelLaps = GetCapacityLaps(FuelCapacity, FuelPerLap);
-        var maxEnergyLaps = activeDrivers.Max(driver => GetCapacityLaps(EnergyCapacity, driver.EnergyPerLap));
-        var maxResourceLaps = Math.Min(maxFuelLaps, maxEnergyLaps);
+        int maxFuelLaps = GetCapacityLaps(FuelCapacity, FuelPerLap);
+        int maxEnergyLaps = activeDrivers.Max(driver => GetCapacityLaps(EnergyCapacity, driver.EnergyPerLap));
+        int maxResourceLaps = Math.Min(maxFuelLaps, maxEnergyLaps);
 
         if (maxResourceLaps < 1)
         {
@@ -492,19 +474,19 @@ public sealed class MainViewModel : BindableBase
             return;
         }
 
-        var raceDuration = GetRaceDuration();
-        var averageLap = TimeSpan.FromTicks((long)activeDrivers.Average(d => d.ParsedLapTime.Ticks));
-        var estimatedLaps = Math.Max(1, (int)Math.Ceiling(raceDuration.TotalSeconds / averageLap.TotalSeconds));
+        TimeSpan raceDuration = GetRaceDuration();
+        TimeSpan averageLap = TimeSpan.FromTicks((long)activeDrivers.Average(d => d.ParsedLapTime.Ticks));
+        int estimatedLaps = Math.Max(1, (int)Math.Ceiling(raceDuration.TotalSeconds / averageLap.TotalSeconds));
 
-        var generated = new List<StintPlan>();
-        var remainingLaps = estimatedLaps;
-        var driverIndex = 0;
-            var tyreSetNumber = 1;
-            var driverStintCounts = activeDrivers.ToDictionary(driver => driver, _ => 0);
+        List<StintPlan> generated = [];
+        int remainingLaps = estimatedLaps;
+        int driverIndex = 0;
+        const int tyreSetNumber = 1;
+        Dictionary<DriverPlan, int> driverStintCounts = activeDrivers.ToDictionary(driver => driver, _ => 0);
 
         while (remainingLaps > 0)
         {
-            var availableDrivers = activeDrivers
+            List<DriverPlan> availableDrivers = activeDrivers
                 .Where(driver => driver.MaxStints <= 0 || driverStintCounts[driver] < driver.MaxStints)
                 .ToList();
 
@@ -513,17 +495,17 @@ public sealed class MainViewModel : BindableBase
                 break;
             }
 
-            var driver = availableDrivers[driverIndex % availableDrivers.Count];
-            var driverEnergyLaps = GetCapacityLaps(EnergyCapacity, driver.EnergyPerLap);
-            var stintCap = Math.Min(maxFuelLaps, driverEnergyLaps);
-            var stintLaps = Math.Max(1, Math.Min(stintCap, remainingLaps));
+            DriverPlan driver = availableDrivers[driverIndex % availableDrivers.Count];
+            int driverEnergyLaps = GetCapacityLaps(EnergyCapacity, driver.EnergyPerLap);
+            int stintCap = Math.Min(maxFuelLaps, driverEnergyLaps);
+            int stintLaps = Math.Max(1, Math.Min(stintCap, remainingLaps));
 
             if (remainingLaps > stintLaps && remainingLaps - stintLaps < Math.Min(stintCap, 3))
             {
                 stintLaps = Math.Max(1, Math.Min(stintCap, remainingLaps / 2));
             }
 
-            var stint = new StintPlan
+            StintPlan stint = new StintPlan
             {
                 Number = generated.Count + 1,
                 Driver = driver,
@@ -544,9 +526,9 @@ public sealed class MainViewModel : BindableBase
                 continue;
             }
 
-            var nextDriver = availableDrivers[(driverIndex) % availableDrivers.Count];
-            var nextStintCap = Math.Min(maxFuelLaps, GetCapacityLaps(EnergyCapacity, nextDriver.EnergyPerLap));
-            var nextStintLaps = Math.Max(1, Math.Min(nextStintCap, remainingLaps));
+            DriverPlan nextDriver = availableDrivers[(driverIndex) % availableDrivers.Count];
+            int nextStintCap = Math.Min(maxFuelLaps, GetCapacityLaps(EnergyCapacity, nextDriver.EnergyPerLap));
+            int nextStintLaps = Math.Max(1, Math.Min(nextStintCap, remainingLaps));
 
             stint.RefuelAmount = Math.Min(FuelCapacity, nextStintLaps * FuelPerLap);
             stint.EnergyAmount = Math.Min(EnergyCapacity, nextStintLaps * nextDriver.EnergyPerLap);
@@ -561,31 +543,31 @@ public sealed class MainViewModel : BindableBase
         _isApplyingCalculatedValues = true;
         try
         {
-            for (var index = 0; index < Stints.Count; index++)
+            for (int index = 0; index < Stints.Count; index++)
             {
                 Stints[index].Number = index + 1;
             }
 
-            var raceStart = TryGetRaceStart(out var parsedRaceStart)
+            DateTimeOffset raceStart = TryGetRaceStart(out DateTimeOffset parsedRaceStart)
                 ? parsedRaceStart
                 : new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
             UpdateRaceStartSummary();
 
-            var warnings = new List<string>();
-            var totalDrive = TimeSpan.Zero;
-            var totalPit = TimeSpan.Zero;
-            var totalLaps = 0;
-            var tyreSet = GetInitialTyreSetNumber();
-            var driverStintCounts = new Dictionary<DriverPlan, int>();
-            var totalTyreSetsUsed = Math.Max(0, tyreSet);
+            List<string> warnings = [];
+            TimeSpan totalDrive = TimeSpan.Zero;
+            TimeSpan totalPit = TimeSpan.Zero;
+            int totalLaps = 0;
+            int tyreSet = GetInitialTyreSetNumber();
+            Dictionary<DriverPlan, int> driverStintCounts = new Dictionary<DriverPlan, int>();
+            int totalTyreSetsUsed = Math.Max(0, tyreSet);
 
-            foreach (var driver in Drivers)
+            foreach (DriverPlan driver in Drivers)
             {
                 driver.AssignedStints = 0;
             }
 
-            foreach (var stint in Stints)
+            foreach (StintPlan stint in Stints)
             {
                 totalLaps += Math.Max(0, stint.Laps);
                 stint.TyreSetNumber = tyreSet;
@@ -593,14 +575,15 @@ public sealed class MainViewModel : BindableBase
 
                 if (stint.AutoFillEnergyForNextStint)
                 {
-                    var nextStint = Stints.SkipWhile(current => !ReferenceEquals(current, stint)).Skip(1).FirstOrDefault();
-                    var nextStintEnergyNeed = nextStint is null || nextStint.Driver is null
+                    StintPlan? nextStint = Stints.SkipWhile(current => !ReferenceEquals(current, stint)).Skip(1)
+                        .FirstOrDefault();
+                    double nextStintEnergyNeed = nextStint is null || nextStint.Driver is null
                         ? 0
                         : nextStint.Laps * nextStint.Driver.EnergyPerLap;
                     stint.EnergyAmount = Math.Min(EnergyCapacity, Math.Max(0, nextStintEnergyNeed));
                 }
 
-                if (stint.Driver is null || !stint.Driver.TryGetLapTime(out var lapTime))
+                if (stint.Driver is null || !stint.Driver.TryGetLapTime(out TimeSpan lapTime))
                 {
                     stint.ValidationNote = "Set a valid driver and lap time.";
                     continue;
@@ -616,18 +599,19 @@ public sealed class MainViewModel : BindableBase
                 {
                     driverStintCounts[stint.Driver]++;
                 }
+
                 stint.Driver.AssignedStints = driverStintCounts[stint.Driver];
 
-                var driveTime = TimeSpan.FromTicks(lapTime.Ticks * Math.Max(0, stint.Laps));
-                var serviceSeconds = BasePitSeconds
-                    + GetRefillTimeSeconds(stint.RefuelAmount, FuelCapacity)
-                    + GetRefillTimeSeconds(stint.EnergyAmount, EnergyCapacity)
-                    + stint.RepairSeconds
-                    + (stint.ChangeTyres ? TyreChangeSeconds : 0);
+                TimeSpan driveTime = TimeSpan.FromTicks(lapTime.Ticks * Math.Max(0, stint.Laps));
+                double serviceSeconds = BasePitSeconds
+                                        + GetRefillTimeSeconds(stint.RefuelAmount, FuelCapacity)
+                                        + GetRefillTimeSeconds(stint.EnergyAmount, EnergyCapacity)
+                                        + stint.RepairSeconds
+                                        + (stint.ChangeTyres ? TyreChangeSeconds : 0);
 
-                var serviceTime = TimeSpan.FromSeconds(Math.Max(0, serviceSeconds));
-                var pitLaneTime = TimeSpan.FromSeconds(Math.Max(0, PitLaneSeconds));
-                var totalPitTime = pitLaneTime + serviceTime;
+                TimeSpan serviceTime = TimeSpan.FromSeconds(Math.Max(0, serviceSeconds));
+                TimeSpan pitLaneTime = TimeSpan.FromSeconds(Math.Max(0, PitLaneSeconds));
+                TimeSpan totalPitTime = pitLaneTime + serviceTime;
 
                 stint.DrivingTime = driveTime;
                 stint.PitLaneTime = pitLaneTime;
@@ -636,14 +620,8 @@ public sealed class MainViewModel : BindableBase
                 stint.RaceStart = raceStart + totalDrive + totalPit;
                 stint.RaceEnd = stint.RaceStart + driveTime;
 
-                if (TryConvertDriverWindow(stint.Driver.TimeZoneId, stint.RaceStart, stint.RaceEnd, out var localWindow))
-                {
-                    stint.DriverLocalWindowText = localWindow;
-                }
-                else
-                {
-                    stint.DriverLocalWindowText = "Invalid time zone";
-                }
+                stint.DriverLocalWindowText = TryConvertDriverWindow(stint.Driver.TimeZoneId, stint.RaceStart, stint.RaceEnd,
+                    out string localWindow) ? localWindow : "Invalid time zone";
 
                 stint.ValidationNote = BuildValidationNote(stint, tyreSet, driverStintCounts[stint.Driver]);
                 totalDrive += driveTime;
@@ -665,7 +643,7 @@ public sealed class MainViewModel : BindableBase
                 warnings.Add("Planned tyre changes exceed the available tyre sets for this race.");
             }
 
-            var overAssignedDrivers = driverStintCounts
+            List<string> overAssignedDrivers = driverStintCounts
                 .Where(entry => entry.Key.MaxStints > 0 && entry.Value > entry.Key.MaxStints)
                 .Select(entry => $"{entry.Key.Name} {entry.Value}/{entry.Key.MaxStints}")
                 .ToList();
@@ -674,15 +652,15 @@ public sealed class MainViewModel : BindableBase
                 warnings.Add($"Driver stint cap exceeded: {string.Join(", ", overAssignedDrivers)}.");
             }
 
-            var raceDuration = GetRaceDuration();
-            var projectedFinish = totalDrive + totalPit;
+            TimeSpan raceDuration = GetRaceDuration();
+            TimeSpan projectedFinish = totalDrive + totalPit;
             if (projectedFinish > raceDuration)
             {
-                warnings.Add($"Projected finish overruns the race by {(projectedFinish - raceDuration):hh\\:mm\\:ss}.");
+                warnings.Add($@"Projected finish overruns the race by {(projectedFinish - raceDuration):hh\:mm\:ss}.");
             }
             else if (raceDuration - projectedFinish > TimeSpan.FromMinutes(3))
             {
-                warnings.Add($"Plan leaves {(raceDuration - projectedFinish):hh\\:mm\\:ss} unused.");
+                warnings.Add($@"Plan leaves {(raceDuration - projectedFinish):hh\:mm\:ss} unused.");
             }
 
             SummaryText =
@@ -696,7 +674,9 @@ public sealed class MainViewModel : BindableBase
 
             WarningText = warnings.Count > 0
                 ? string.Join(" ", warnings)
-                : string.Join(" ", Stints.Where(s => !string.IsNullOrWhiteSpace(s.ValidationNote)).Select(s => $"S{s.Number}: {s.ValidationNote}").Take(3));
+                : string.Join(" ",
+                    Stints.Where(s => !string.IsNullOrWhiteSpace(s.ValidationNote))
+                        .Select(s => $"S{s.Number}: {s.ValidationNote}").Take(3));
         }
         finally
         {
@@ -706,12 +686,12 @@ public sealed class MainViewModel : BindableBase
 
     private void UpdateAvailableDrivers(Dictionary<DriverPlan, int> driverStintCounts)
     {
-        foreach (var stint in Stints)
+        foreach (StintPlan stint in Stints)
         {
-            var availableDrivers = Drivers
+            List<DriverPlan> availableDrivers = Drivers
                 .Where(driver =>
                 {
-                    var assigned = driverStintCounts.GetValueOrDefault(driver);
+                    int assigned = driverStintCounts.GetValueOrDefault(driver);
                     if (ReferenceEquals(driver, stint.Driver))
                     {
                         assigned--;
@@ -727,11 +707,11 @@ public sealed class MainViewModel : BindableBase
 
     private void RebuildTimelineRows()
     {
-        var selectedStint = SelectedTimelineRow?.SourceStint ?? SelectedStint;
+        StintPlan? selectedStint = SelectedTimelineRow?.SourceStint ?? SelectedStint;
 
         PlanTimelineRows.Clear();
 
-        foreach (var stint in Stints)
+        foreach (StintPlan stint in Stints)
         {
             PlanTimelineRows.Add(PlanTimelineRow.ForStint(stint));
 
@@ -766,7 +746,7 @@ public sealed class MainViewModel : BindableBase
 
     private string BuildValidationNote(StintPlan stint, int tyreSet, int driverAssignedStints)
     {
-        var notes = new List<string>();
+        List<string> notes = new List<string>();
 
         if (stint.Driver is null)
         {
@@ -774,7 +754,8 @@ public sealed class MainViewModel : BindableBase
         }
         else if (stint.Driver.MaxStints > 0 && driverAssignedStints > stint.Driver.MaxStints)
         {
-            notes.Add($"Driver {stint.Driver.Name} is assigned to {driverAssignedStints} stints, above the allowed cap of {stint.Driver.MaxStints}.");
+            notes.Add(
+                $"Driver {stint.Driver.Name} is assigned to {driverAssignedStints} stints, above the allowed cap of {stint.Driver.MaxStints}.");
         }
 
         if (stint.Driver is not null && stint.Driver.EnergyPerLap <= 0)
@@ -782,16 +763,18 @@ public sealed class MainViewModel : BindableBase
             notes.Add($"Driver {stint.Driver.Name} needs a VE per lap value above zero.");
         }
 
-        var fuelNeed = stint.Laps * FuelPerLap;
+        double fuelNeed = stint.Laps * FuelPerLap;
         if (FuelPerLap > 0 && fuelNeed > FuelCapacity)
         {
-            notes.Add($"Fuel needed for this stint is {fuelNeed:F1}, which exceeds the configured fuel capacity of {FuelCapacity:F1}.");
+            notes.Add(
+                $"Fuel needed for this stint is {fuelNeed:F1}, which exceeds the configured fuel capacity of {FuelCapacity:F1}.");
         }
 
-        var energyNeed = stint.Driver is null ? 0 : stint.Laps * stint.Driver.EnergyPerLap;
+        double energyNeed = stint.Driver is null ? 0 : stint.Laps * stint.Driver.EnergyPerLap;
         if (stint.Driver is not null && stint.Driver.EnergyPerLap > 0 && energyNeed > EnergyCapacity)
         {
-            notes.Add($"VE needed for this stint is {energyNeed:F1}, which exceeds the configured VE capacity of {EnergyCapacity:F1}.");
+            notes.Add(
+                $"VE needed for this stint is {energyNeed:F1}, which exceeds the configured VE capacity of {EnergyCapacity:F1}.");
         }
 
         if (tyreSet > AvailableTyres)
@@ -804,14 +787,14 @@ public sealed class MainViewModel : BindableBase
 
     private void ReplaceStints(IEnumerable<StintPlan> stints)
     {
-        foreach (var stint in Stints)
+        foreach (StintPlan stint in Stints)
         {
             stint.PropertyChanged -= OnStintPropertyChanged;
         }
 
         Stints.Clear();
 
-        foreach (var stint in stints)
+        foreach (StintPlan stint in stints)
         {
             stint.PropertyChanged += OnStintPropertyChanged;
             Stints.Add(stint);
@@ -828,9 +811,9 @@ public sealed class MainViewModel : BindableBase
 
         try
         {
-            var zone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            var localStart = TimeZoneInfo.ConvertTime(raceStart, zone);
-            var localEnd = TimeZoneInfo.ConvertTime(raceEnd, zone);
+            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            DateTimeOffset localStart = TimeZoneInfo.ConvertTime(raceStart, zone);
+            DateTimeOffset localEnd = TimeZoneInfo.ConvertTime(raceEnd, zone);
             localWindow = $"{localStart:ddd HH:mm} - {localEnd:HH:mm}";
             return true;
         }
@@ -846,24 +829,19 @@ public sealed class MainViewModel : BindableBase
 
     private static int GetCapacityLaps(double capacity, double perLap)
     {
-        if (perLap <= 0)
-        {
-            return int.MaxValue;
-        }
-
-        return Math.Max(0, (int)Math.Floor(capacity / perLap));
+        return perLap <= 0 ? int.MaxValue : Math.Max(0, (int)Math.Floor(capacity / perLap));
     }
 
     private static bool TryParseFlexibleLapTime(string? text, out TimeSpan lapTime)
     {
-        lapTime = default;
+        lapTime = TimeSpan.Zero;
         if (string.IsNullOrWhiteSpace(text))
         {
             return false;
         }
 
-        var formats = new[]
-        {
+        string[] formats =
+        [
             @"m\:ss\.fff",
             @"mm\:ss\.fff",
             @"m\:ss",
@@ -872,42 +850,37 @@ public sealed class MainViewModel : BindableBase
             @"hh\:mm\:ss",
             @"h\:mm\:ss\.fff",
             @"hh\:mm\:ss\.fff"
-        };
+        ];
 
         return TimeSpan.TryParseExact(text.Trim(), formats, CultureInfo.InvariantCulture, out lapTime);
     }
 
     private static string FormatSignedTime(TimeSpan value)
     {
-        var sign = value < TimeSpan.Zero ? "-" : string.Empty;
-        var absolute = value.Duration();
+        string sign = value < TimeSpan.Zero ? "-" : string.Empty;
+        TimeSpan absolute = value.Duration();
 
-        if (absolute.Hours > 0)
-        {
-            return $"{sign}{absolute:hh\\:mm\\:ss\\.fff}";
-        }
-
-        return $"{sign}{absolute:mm\\:ss\\.fff}";
+        return absolute.Hours > 0 ? $@"{sign}{absolute:hh\:mm\:ss\.fff}" : $@"{sign}{absolute:mm\:ss\.fff}";
     }
 
     private static IEnumerable<TrackOption> CreateTrackOptions()
     {
         return
         [
-            new("Bahrain International Circuit", "Base game 2023 WEC"),
-            new("Circuit de la Sarthe", "Base game 2023 WEC"),
-            new("Fuji Speedway", "Base game 2023 WEC"),
-            new("Sebring International Raceway", "Base game 2023 WEC"),
-            new("Autodromo Nazionale Monza", "Base game 2023 WEC"),
-            new("Circuit de Spa-Francorchamps", "Base game 2023 WEC"),
-            new("Algarve International Circuit", "Base game 2023 WEC"),
-            new("Autodromo Internazionale Enzo e Dino Ferrari", "2024 Pack 1"),
-            new("Circuit of the Americas", "2024 Pack 2"),
-            new("Interlagos", "2024 Pack 3"),
-            new("Lusail International Circuit", "2024 season content"),
-            new("Silverstone International Circuit", "ELMS Pack 1"),
-            new("Circuit Paul Ricard", "ELMS Pack 2"),
-            new("Circuit de Barcelona-Catalunya", "ELMS Pack 3")
+            new TrackOption("Bahrain International Circuit", "Base game 2023 WEC"),
+            new TrackOption("Circuit de la Sarthe", "Base game 2023 WEC"),
+            new TrackOption("Fuji Speedway", "Base game 2023 WEC"),
+            new TrackOption("Sebring International Raceway", "Base game 2023 WEC"),
+            new TrackOption("Autodromo Nazionale Monza", "Base game 2023 WEC"),
+            new TrackOption("Circuit de Spa-Francorchamps", "Base game 2023 WEC"),
+            new TrackOption("Algarve International Circuit", "Base game 2023 WEC"),
+            new TrackOption("Autodromo Internazionale Enzo e Dino Ferrari", "2024 Pack 1"),
+            new TrackOption("Circuit of the Americas", "2024 Pack 2"),
+            new TrackOption("Interlagos", "2024 Pack 3"),
+            new TrackOption("Lusail International Circuit", "2024 season content"),
+            new TrackOption("Silverstone International Circuit", "ELMS Pack 1"),
+            new TrackOption("Circuit Paul Ricard", "ELMS Pack 2"),
+            new TrackOption("Circuit de Barcelona-Catalunya", "ELMS Pack 3")
         ];
     }
 
@@ -915,31 +888,33 @@ public sealed class MainViewModel : BindableBase
     {
         return
         [
-            new("Hypercar", FuelFieldMode.Hidden),
-            new("LMGT3", FuelFieldMode.Hidden),
-            new("LMP2", FuelFieldMode.PerLapOnly),
-            new("LMP3", FuelFieldMode.PerLapOnly),
-            new("GTE", FuelFieldMode.PerLapOnly)
+            new CarClassOption("Hypercar", FuelFieldMode.Hidden),
+            new CarClassOption("LMGT3", FuelFieldMode.Hidden),
+            new CarClassOption("LMP2", FuelFieldMode.PerLapOnly),
+            new CarClassOption("LMP3", FuelFieldMode.PerLapOnly),
+            new CarClassOption("GTE", FuelFieldMode.PerLapOnly)
         ];
     }
 
     private TimeSpan GetRaceDuration()
     {
-        return TimeSpan.FromHours(Math.Max(0, RaceLengthHours)) + TimeSpan.FromMinutes(Math.Clamp(RaceLengthMinutes, 0, 59));
+        return TimeSpan.FromHours(Math.Max(0, RaceLengthHours)) +
+               TimeSpan.FromMinutes(Math.Clamp(RaceLengthMinutes, 0, 59));
     }
 
     private bool TryGetRaceStart(out DateTimeOffset raceStart)
     {
         raceStart = default;
 
-        if (!DateTime.TryParse(RaceStartText, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var parsed))
+        if (!DateTime.TryParse(RaceStartText, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces,
+                out DateTime parsed))
         {
             return false;
         }
 
         try
         {
-            var zone = TimeZoneInfo.FindSystemTimeZoneById(RaceTimeZoneId);
+            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(RaceTimeZoneId);
             raceStart = new DateTimeOffset(parsed, zone.GetUtcOffset(parsed));
             return true;
         }
@@ -955,13 +930,14 @@ public sealed class MainViewModel : BindableBase
 
     private void UpdateRaceStartSummary()
     {
-        if (!TryGetRaceStart(out var raceStart))
+        if (!TryGetRaceStart(out DateTimeOffset raceStart))
         {
             RaceStartSummary = "Enter a valid race start and race time zone.";
             return;
         }
 
-        RaceStartSummary = $"Race start: {raceStart:yyyy-MM-dd HH:mm zzz} | UTC: {raceStart.UtcDateTime:yyyy-MM-dd HH:mm}";
+        RaceStartSummary =
+            $"Race start: {raceStart:yyyy-MM-dd HH:mm zzz} | UTC: {raceStart.UtcDateTime:yyyy-MM-dd HH:mm}";
     }
 
     private void OnDriversCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -974,12 +950,11 @@ public sealed class MainViewModel : BindableBase
             }
         }
 
-        if (e.OldItems is not null)
+        if (e.OldItems is null) return;
+
+        foreach (DriverPlan driver in e.OldItems)
         {
-            foreach (DriverPlan driver in e.OldItems)
-            {
-                driver.PropertyChanged -= OnDriverPropertyChanged;
-            }
+            driver.PropertyChanged -= OnDriverPropertyChanged;
         }
     }
 
@@ -993,12 +968,11 @@ public sealed class MainViewModel : BindableBase
             }
         }
 
-        if (e.OldItems is not null)
+        if (e.OldItems is null) return;
+        
+        foreach (StintPlan stint in e.OldItems)
         {
-            foreach (StintPlan stint in e.OldItems)
-            {
-                stint.PropertyChanged -= OnStintPropertyChanged;
-            }
+            stint.PropertyChanged -= OnStintPropertyChanged;
         }
     }
 
@@ -1047,32 +1021,20 @@ public sealed class MainViewModel : BindableBase
     }
 }
 
-public sealed class TrackOption
+public sealed class TrackOption(string name, string source)
 {
-    public TrackOption(string name, string source)
-    {
-        Name = name;
-        Source = source;
-    }
+    public string Name { get; } = name;
 
-    public string Name { get; }
-
-    public string Source { get; }
+    public string Source { get; } = source;
 
     public string DisplayName => $"{Name} ({Source})";
 }
 
-public sealed class CarClassOption
+public sealed class CarClassOption(string name, FuelFieldMode fuelMode)
 {
-    public CarClassOption(string name, FuelFieldMode fuelMode)
-    {
-        Name = name;
-        FuelMode = fuelMode;
-    }
+    public string Name { get; } = name;
 
-    public string Name { get; }
-
-    public FuelFieldMode FuelMode { get; }
+    public FuelFieldMode FuelMode { get; } = fuelMode;
 }
 
 public enum FuelFieldMode
@@ -1082,23 +1044,16 @@ public enum FuelFieldMode
     CapacityAndPerLap
 }
 
-public sealed class DriverPlan : BindableBase
+public sealed class DriverPlan(string name, string lapTimeText, string timeZoneId, int maxStints, double energyPerLap)
+    : BindableBase
 {
-    private string _name;
-    private string _lapTimeText;
-    private string _timeZoneId;
-    private int _maxStints;
+    private string _name = name;
+    private string _lapTimeText = lapTimeText;
+    private string _timeZoneId = timeZoneId;
+    private TimeZoneInfo? _selectedTimeZone;
+    private int _maxStints = maxStints;
     private int _assignedStints;
-    private double _energyPerLap;
-
-    public DriverPlan(string name, string lapTimeText, string timeZoneId, int maxStints, double energyPerLap)
-    {
-        _name = name;
-        _lapTimeText = lapTimeText;
-        _timeZoneId = timeZoneId;
-        _maxStints = maxStints;
-        _energyPerLap = energyPerLap;
-    }
+    private double _energyPerLap = energyPerLap;
 
     public string Name
     {
@@ -1115,7 +1070,32 @@ public sealed class DriverPlan : BindableBase
     public string TimeZoneId
     {
         get => _timeZoneId;
-        set => SetProperty(ref _timeZoneId, value);
+        set
+        {
+            if (SetProperty(ref _timeZoneId, value))
+            {
+                try
+                {
+                    SelectedTimeZone = TimeZoneInfo.FindSystemTimeZoneById(value);
+                }
+                catch
+                {
+                    SelectedTimeZone = null;
+                }
+            }
+        }
+    }
+
+    public TimeZoneInfo? SelectedTimeZone
+    {
+        get => _selectedTimeZone;
+        set
+        {
+            if (SetProperty(ref _selectedTimeZone, value))
+            {
+                TimeZoneId = value?.Id ?? TimeZoneInfo.Local.Id;
+            }
+        }
     }
 
     public int MaxStints
@@ -1136,28 +1116,26 @@ public sealed class DriverPlan : BindableBase
         set => SetProperty(ref _energyPerLap, Math.Max(0, value));
     }
 
-    public TimeSpan ParsedLapTime => TryGetLapTime(out var lapTime) ? lapTime : TimeSpan.Zero;
+    public TimeSpan ParsedLapTime => TryGetLapTime(out TimeSpan lapTime) ? lapTime : TimeSpan.Zero;
 
     public bool TryGetLapTime(out TimeSpan lapTime)
     {
-        lapTime = default;
-        var text = LapTimeText?.Trim();
+        lapTime = TimeSpan.Zero;
+        string text = LapTimeText.Trim();
 
         if (string.IsNullOrWhiteSpace(text))
         {
             return false;
         }
 
-        var formats =
-            new[]
-            {
-                @"m\:ss\.fff",
-                @"mm\:ss\.fff",
-                @"h\:mm\:ss",
-                @"hh\:mm\:ss",
-                @"h\:mm\:ss\.fff",
-                @"hh\:mm\:ss\.fff"
-            };
+        string[] formats = [
+            @"m\:ss\.fff",
+            @"mm\:ss\.fff",
+            @"h\:mm\:ss",
+            @"hh\:mm\:ss",
+            @"h\:mm\:ss\.fff",
+            @"hh\:mm\:ss\.fff"
+        ];
 
         return TimeSpan.TryParseExact(text, formats, CultureInfo.InvariantCulture, out lapTime);
     }
@@ -1386,6 +1364,8 @@ public sealed class PlanTimelineRow : BindableBase
 
     public static PlanTimelineRow ForPitStop(StintPlan stint) => new(stint, true);
 
+    public bool IsStint => !IsPitStop;
+
     public string RowType => IsPitStop ? "Pit Stop" : "Stint";
 
     public string NumberText => IsPitStop ? $"P{SourceStint.Number}" : SourceStint.Number.ToString();
@@ -1547,8 +1527,11 @@ public sealed class PlanTimelineRow : BindableBase
 
             SourceStint.AutoFillEnergyForNextStint = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsEnergyInputEnabled));
         }
     }
+
+    public bool IsEnergyInputEnabled => !AutoFillEnergyForNextStint;
 
     public string Notes => SourceStint.ValidationNote;
 
@@ -1559,13 +1542,13 @@ public sealed class PlanTimelineRow : BindableBase
             return ("#F3E1E4", "#8B1E2D", "#FDF5F6", "#5E2A31");
         }
 
-        var key = SourceStint.Driver?.Name;
+        string? key = SourceStint.Driver?.Name;
         if (string.IsNullOrWhiteSpace(key))
         {
             return DriverPalette[0];
         }
 
-        var index = Math.Abs(StringComparer.OrdinalIgnoreCase.GetHashCode(key)) % DriverPalette.Length;
+        int index = Math.Abs(StringComparer.OrdinalIgnoreCase.GetHashCode(key)) % DriverPalette.Length;
         return DriverPalette[index];
     }
 }
@@ -1592,24 +1575,30 @@ public abstract class BindableBase : INotifyPropertyChanged
     }
 }
 
-public sealed class RelayCommand : ICommand
+public sealed class RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+    : ICommand
 {
-    private readonly Action<object?> _execute;
-    private readonly Predicate<object?>? _canExecute;
-
-    public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
-    {
-        _execute = execute;
-        _canExecute = canExecute;
-    }
-
     public event EventHandler? CanExecuteChanged
     {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
+        add => CommandManagerImpl.RequerySuggested += value;
+        remove => CommandManagerImpl.RequerySuggested -= value;
     }
 
-    public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
+    public bool CanExecute(object? parameter) => canExecute?.Invoke(parameter) ?? true;
 
-    public void Execute(object? parameter) => _execute(parameter);
+    public void Execute(object? parameter) => execute(parameter);
+}
+
+/// <summary>
+/// Avalonia-compatible replacement for WPF CommandManager.
+/// Provides a simple RequerySuggested event that commands can hook into.
+/// </summary>
+public static class CommandManagerImpl
+{
+    public static event EventHandler? RequerySuggested;
+
+    public static void InvalidateRequerySuggested()
+    {
+        RequerySuggested?.Invoke(null, EventArgs.Empty);
+    }
 }
