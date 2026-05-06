@@ -7,6 +7,7 @@ This file describes the race-planning rules currently implemented in the app.
 - Each driver has a `Max Stints` limit
 - A driver with `Assigned Stints >= Max Stints` is not offered for new stint assignments
 - A currently assigned driver remains selectable on their own stint
+- New and default drivers use the user's PC time zone unless changed manually
 
 ## 2. Fuel Visibility By Car Class
 
@@ -34,11 +35,20 @@ This is treated as the time needed to refill from `0` to `100`.
 
 Service time uses:
 
-- base pit time
 - scaled fuel refill time
 - scaled VE refill time
 - repair time
 - tyre change time
+
+Total pit-stop time is:
+
+- pit lane time
+- scaled fuel refill time, when fuel applies for the selected car class
+- scaled VE refill time
+- tyre change time, when `Change All Tyres` is enabled
+- repair time
+
+There is no separate base service time.
 
 ## 4. Tyre Limits
 
@@ -83,7 +93,13 @@ Pit stops are represented between stints.
 
 A pit-stop row is built from the stint that just ended and shows the service required before the next stint begins.
 
-## 8. Notes And Warnings
+## 8. Driver Colors
+
+- Each driver should have a distinct stint-card color in the timeline
+- Colors are assigned by driver list order, not by driver name
+- If there are more drivers than the fixed palette, additional colors are generated rather than reusing an existing driver's color
+
+## 9. Notes And Warnings
 
 Validation notes are written in descriptive language rather than shorthand.
 

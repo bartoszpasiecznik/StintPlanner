@@ -19,6 +19,7 @@ The UI direction is:
 
 - driver limits are based on stint count, not lap count
 - unavailable drivers should not appear as assignable options once capped
+- new and default drivers use the user's PC time zone
 
 ### Tyres
 
@@ -33,8 +34,9 @@ The UI direction is:
 ### Pit Logic
 
 - pit stops appear between stints
-- pit timing includes pit lane, service, and total time
+- pit timing includes pit lane, refill or VE time, tyre change time, repair time, and total time
 - one full-refill-time input is used instead of separate rates
+- there is no separate base service time
 
 ### Fuel And VE
 
@@ -47,7 +49,7 @@ The UI direction is:
 ### Visual Direction
 
 - the right-side cards were intentionally made smaller
-- different drivers’ stint cards use different colors
+- different drivers' stint cards use unique colors assigned from driver list order
 - tag/chip styling should stay more angular and not drift back toward circle-like pills
 
 ### Summary
@@ -57,8 +59,12 @@ The UI direction is:
 
 ## Current Main Files To Inspect
 
-- `LMUStintPlanner/MainWindow.xaml`
-- `LMUStintPlanner/MainViewModel.cs`
+- `LMUStintPlanner/Views/MainWindow.axaml`
+- `LMUStintPlanner/Views/Controls/`
+- `LMUStintPlanner/Styles/PlannerControls.axaml`
+- `LMUStintPlanner/ViewModels/MainViewModel*.cs`
+- `LMUStintPlanner/ViewModels/Models/`
+- `LMUStintPlanner/ViewModels/Services/`
 
 ## Safe Default Workflow For Future Agents
 

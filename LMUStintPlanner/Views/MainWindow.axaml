@@ -1,0 +1,91 @@
+<Window x:Class="LMUStintPlanner.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:LMUStintPlanner.Views.Controls"
+        xmlns:viewModels="using:LMUStintPlanner.ViewModels"
+        Title="LMU Stint Planner"
+        Height="930"
+        Width="1560"
+        MinHeight="820"
+        MinWidth="1280"
+        Background="#100D0C"
+        x:DataType="viewModels:MainViewModel">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="0,0,0,12"
+                Padding="16,14"
+                Background="#171210"
+                BorderBrush="#312620"
+                BorderThickness="1"
+                CornerRadius="8">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                    <Border Width="4"
+                            Height="42"
+                            Background="#E06F38"
+                            CornerRadius="2" />
+                    <StackPanel>
+                        <TextBlock Classes="panelKicker" Text="LMU RACE CONTROL" />
+                        <TextBlock FontSize="25"
+                                   FontWeight="SemiBold"
+                                   Foreground="#F7EFE7"
+                                   Text="Stint Planner" />
+                    </StackPanel>
+                    <TextBlock MaxWidth="620"
+                               VerticalAlignment="Center"
+                               Foreground="#AFA39A"
+                               Text="Race duration, driver caps, tyres, pit service, VE, fuel, and local windows in one editable timeline."
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                    <Button Classes="primaryAction"
+                            Command="{Binding GenerateStrategyCommand}"
+                            Content="Generate Plan" />
+                    <Button Classes="secondaryAction"
+                            Command="{Binding AddManualStintCommand}"
+                            Content="Add Manual Stint" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="430,12,*">
+            <Border Grid.Column="0"
+                    Background="#171210"
+                    BorderBrush="#312620"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <TabControl Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            TabStripPlacement="Left">
+                    <TabItem Header="Race">
+                        <controls:RaceSetupPanel />
+                    </TabItem>
+                    <TabItem Header="Car">
+                        <controls:CarSetupPanel />
+                    </TabItem>
+                    <TabItem Header="Weather">
+                        <controls:WeatherPanel />
+                    </TabItem>
+                    <TabItem Header="Drivers">
+                        <controls:DriversPanel />
+                    </TabItem>
+                </TabControl>
+            </Border>
+
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <controls:PlanStatusCards Grid.Row="0" />
+                <controls:TimelinePanel Grid.Row="1" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

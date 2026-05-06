@@ -1,0 +1,140 @@
+# ================================================
+# .NET / .NET Core / .NET 5+
+# ================================================
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## IDE
+*.Cache
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.old
+*.user
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+*.suo
+*.userprefs
+*.sln.docstates
+*.dot-settings.user
+**/AutoRecover/
+**/.vs/
+
+## Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+!.vscode/*.code-profile
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+*.iws
+*.iml
+*.ipr
+.vs/
+
+## MonoDevelop / VS Mac
+.eproj.local
+*.sdf
+build/
+*.tlog
+*.saz
+*.dotSettings.user
+*.pidb
+*.lastState
+
+## Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+## Folder config file
+Desktop.ini
+
+## Mac
+.DS_Store
+
+## Coverage
+*.coverage
+*.coveragexml
+*.cobertura.xml
+coverage/
+coverage-*
+nunit-output/
+TestResult/
+TestResults/
+*.osx
+*.jacc
+*.jaccover
+
+## Test results
+_test/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## Build Generated
+[Bb]artender/
+[Bb]uild/
+temp/
+Temp/
+tmp/
+
+## OS Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+**/project.lock.json
+**/project.fragment.lock.json
+**/artifacts/
+
+## Azure
+csx/*.ps1
+csx/*.psm1
+
+## Continuous Integration
+.appveyor.yml
+.teamcity*
+
+## Windows Store app
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_wwwroot/
+
+## Visual Studio cache/options directory
+.vs/
+
+## dotnet CLI
+project.lock.json
+pub/
+**/Migrations/*.Design.cs

@@ -1,0 +1,44 @@
+<UserControl x:Class="LMUStintPlanner.Views.Controls.CarSetupPanel"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:LMUStintPlanner.ViewModels"
+             x:DataType="viewModels:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Classes="darkPanel">
+            <StackPanel>
+                <TextBlock Classes="panelKicker" Text="SERVICE MODEL" />
+                <TextBlock Margin="0,2,0,0" Classes="panelTitle" Text="Car And Pit" />
+
+                <TextBlock Classes="fieldLabel" Margin="0,14,0,0" Text="Car Class" />
+                <ComboBox Classes="setupInput"
+                          ItemsSource="{Binding CarClasses}"
+                          SelectedItem="{Binding SelectedCarClass, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:CarClassOption">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <StackPanel Margin="0,12,0,0" IsVisible="{Binding ShowFuelCapacity}">
+                    <TextBlock Classes="fieldLabel" Margin="0" Text="Fuel Capacity" />
+                    <TextBox Classes="setupInput" Text="{Binding FuelCapacity}" />
+                </StackPanel>
+
+                <StackPanel Margin="0,12,0,0" IsVisible="{Binding ShowFuelPerLap}">
+                    <TextBlock Classes="fieldLabel" Margin="0" Text="Fuel Per Lap" />
+                    <TextBox Classes="setupInput" Text="{Binding FuelPerLap}" />
+                </StackPanel>
+
+                <TextBlock Classes="fieldLabel" Text="VE Capacity" />
+                <TextBox Classes="setupInput" Text="{Binding EnergyCapacity}" />
+
+                <TextBlock Classes="fieldLabel" Text="Pit Lane Time (s)" />
+                <TextBox Classes="setupInput" Text="{Binding PitLaneSeconds}" />
+
+                <TextBlock Classes="fieldLabel" Text="Default Repair Time (s)" />
+                <TextBox Classes="setupInput" Text="{Binding DefaultRepairSeconds}" />
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

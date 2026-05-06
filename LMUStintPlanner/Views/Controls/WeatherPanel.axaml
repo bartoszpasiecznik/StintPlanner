@@ -1,0 +1,43 @@
+<UserControl x:Class="LMUStintPlanner.Views.Controls.WeatherPanel"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:LMUStintPlanner.ViewModels"
+             x:DataType="viewModels:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Classes="darkPanel">
+            <StackPanel>
+                <TextBlock Classes="panelKicker" Text="TRACK STATE" />
+                <TextBlock Margin="0,2,0,0" Classes="panelTitle" Text="Rain Crossover" />
+                <TextBlock Margin="0,8,0,0"
+                           Foreground="#AFA39A"
+                           Text="Use current dry pace, current wet pace, and stint fuel or laps remaining to judge whether the crossover point is here."
+                           TextWrapping="Wrap" />
+
+                <TextBlock Classes="fieldLabel" Margin="0,14,0,0" Text="Current Dry Lap" />
+                <TextBox Classes="setupInput" Text="{Binding CurrentDryLapTimeText}" />
+
+                <TextBlock Classes="fieldLabel" Text="Current Wet Lap" />
+                <TextBox Classes="setupInput" Text="{Binding CurrentWetLapTimeText}" />
+
+                <TextBlock Classes="fieldLabel" Text="Laps Left On Stint" />
+                <TextBox Classes="setupInput" Text="{Binding RemainingStintLaps}" />
+
+                <TextBlock Classes="fieldLabel" Text="Fuel Left On Stint" />
+                <TextBox Classes="setupInput" Text="{Binding RemainingStintFuel}" />
+
+                <Border Classes="infoPanel">
+                    <StackPanel>
+                        <TextBlock Foreground="#2B181B"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding RainCrossoverRecommendation}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Margin="0,8,0,0"
+                                   Foreground="#4A1F24"
+                                   Text="{Binding RainCrossoverSummary}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

@@ -1,6 +1,6 @@
 # LMU Stint Planner
 
-LMU Stint Planner is a WPF desktop tool for planning Le Mans Ultimate team races.
+LMU Stint Planner is an Avalonia desktop tool for planning Le Mans Ultimate team races.
 
 It focuses on:
 
@@ -15,16 +15,21 @@ It focuses on:
 ## Tech Stack
 
 - .NET 10
-- WPF
+- Avalonia
 - C#
-- single-view-model desktop architecture
+- pragmatic Avalonia/MVVM desktop architecture
 
 ## Project Layout
 
 - `StintPlanner.sln`: solution file
 - `LMUStintPlanner/`: application project
-- `LMUStintPlanner/MainWindow.xaml`: main UI
-- `LMUStintPlanner/MainViewModel.cs`: planner logic, state, and models
+- `LMUStintPlanner/App.axaml`: application theme/style bootstrap
+- `LMUStintPlanner/Views/MainWindow.axaml`: main window shell
+- `LMUStintPlanner/Views/Controls/`: setup panels and timeline/status controls
+- `LMUStintPlanner/Styles/PlannerControls.axaml`: shared UI styles
+- `LMUStintPlanner/ViewModels/MainViewModel*.cs`: planner state, commands, and strategy logic
+- `LMUStintPlanner/ViewModels/Models/`: UI-facing planner models
+- `LMUStintPlanner/ViewModels/Services/`: calculation and catalog helpers
 
 ## Current Feature Set
 
@@ -39,9 +44,10 @@ It focuses on:
 - `Change All Tyres` only on pit stops
 - Tyre-set display on stint cards
 - Qualifying-tyre handling for the first stint
-- Per-driver stint-card color treatment
+- Unique per-driver stint-card colors, assigned from the driver list order
 - Optional `Add All Needed VE` per pit stop, with manual VE override
 - Per-driver `VE Per Lap` inputs that determine energy-limited stint length and VE estimates
+- Driver time zones default to the user's PC time zone
 
 ## Build
 

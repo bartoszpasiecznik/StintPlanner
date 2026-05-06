@@ -39,7 +39,6 @@ Use this tab for car and pit configuration:
 - fuel per lap
 - VE capacity
 - pit lane time
-- base service time
 - default repair time
 
 Fuel fields depend on the selected class:
@@ -60,6 +59,8 @@ Use this tab to configure:
 - VE per lap
 - time zones
 - max stints
+
+New drivers default to the user's PC time zone. You can still choose a different time zone per driver.
 
 `Max Stints` is the driver cap used by the planner.
 
@@ -112,7 +113,7 @@ A stint card shows:
 - `Get Quali Tyres` on the first stint
 - descriptive notes
 
-Different drivers’ stint cards use different colors so repeated stints are easier to scan.
+Different drivers' stint cards use unique colors so repeated stints are easier to scan. Colors are assigned from the order of drivers in the Drivers tab.
 
 #### Pit-Stop Card
 
@@ -128,6 +129,8 @@ A pit-stop card shows:
 - repair time
 - `Change All Tyres`
 - descriptive notes
+
+Pit-stop time is calculated from pit lane time, scaled fuel or VE refill time, tyre change time, and repair time. There is no separate base service time.
 
 ## VE Pit-Stop Behavior
 
