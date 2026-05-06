@@ -1,0 +1,83 @@
+<UserControl x:Class="LMUStintPlanner.Views.Controls.RaceSetupPanel"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:LMUStintPlanner.ViewModels"
+             x:DataType="viewModels:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Classes="darkPanel">
+            <StackPanel>
+                <TextBlock Classes="panelKicker" Text="EVENT" />
+                <TextBlock Margin="0,2,0,0" Classes="panelTitle" Text="Race Setup" />
+                <CheckBox Margin="0,14,0,0"
+                          IsChecked="{Binding AutoGeneratePlan, Mode=TwoWay}"
+                          Content="Auto-generate stint plan from current inputs" />
+
+                <TextBlock Classes="fieldLabel" Margin="0,14,0,0" Text="Track" />
+                <ComboBox Classes="setupInput"
+                          ItemsSource="{Binding Tracks}"
+                          SelectedItem="{Binding SelectedTrack, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:TrackOption">
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <TextBlock Classes="fieldLabel" Text="Race Start" />
+                <TextBox Classes="setupInput" Text="{Binding RaceStartText}" />
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Classes="fieldLabel" Margin="0" Text="Hours" />
+                        <TextBox Classes="setupInput" Text="{Binding RaceLengthHours}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,8,0">
+                        <TextBlock Classes="fieldLabel" Margin="0" Text="Minutes" />
+                        <TextBox Classes="setupInput" Text="{Binding RaceLengthMinutes}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                        <TextBlock Classes="fieldLabel" Margin="0" Text="Race Time Zone" />
+                        <ComboBox Classes="setupInput"
+                                  ItemsSource="{Binding TimeZones}"
+                                  SelectedItem="{Binding SelectedRaceTimeZone, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Classes="fieldLabel" Margin="0" Text="Full Refill Time (s)" />
+                        <TextBox Classes="setupInput" Text="{Binding FullRefillSeconds}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Classes="fieldLabel" Margin="0" Text="Tyre Change (s)" />
+                        <TextBox Classes="setupInput" Text="{Binding TyreChangeSeconds}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Classes="fieldLabel" Text="Available Tyres" />
+                <TextBox Classes="setupInput" Text="{Binding AvailableTyres}" />
+
+                <Border Classes="infoPanel">
+                    <TextBlock Foreground="#2B181B"
+                               Text="{Binding RaceStartSummary}"
+                               TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

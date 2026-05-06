@@ -1,0 +1,50 @@
+<UserControl x:Class="LMUStintPlanner.Views.Controls.TimelinePanel"
+             x:Name="TimelinePanelRoot"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:LMUStintPlanner.Views.Controls"
+             xmlns:viewModels="using:LMUStintPlanner.ViewModels"
+             x:DataType="viewModels:MainViewModel">
+    <Border Padding="16"
+            Background="#171210"
+            BorderBrush="#312620"
+            BorderThickness="1"
+            CornerRadius="8">
+        <DockPanel>
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,12" ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock Classes="panelKicker" Text="LIVE TIMELINE" />
+                    <TextBlock Margin="0,2,0,0"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="#F7EFE7"
+                               Text="Stint Plan" />
+                    <TextBlock Margin="0,5,0,0"
+                               MaxWidth="820"
+                               Foreground="#AFA39A"
+                               Text="Edit driver, laps, pit service, VE, fuel, repair, and tyre changes directly in sequence."
+                               TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="secondaryAction"
+                        VerticalAlignment="Top"
+                        Command="{Binding RemoveSelectedStintCommand}"
+                        Content="Remove Selected" />
+            </Grid>
+
+            <ListBox ItemsSource="{Binding PlanTimelineRows}"
+                     SelectedItem="{Binding SelectedTimelineRow, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:PlanTimelineRow">
+                        <Border Classes="timelineSelectionFrame">
+                            <StackPanel>
+                                <controls:StintTimelineCard />
+                                <controls:PitStopTimelineCard ShowFuelPerLap="{Binding #TimelinePanelRoot.DataContext.ShowFuelPerLap}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+    </Border>
+</UserControl>

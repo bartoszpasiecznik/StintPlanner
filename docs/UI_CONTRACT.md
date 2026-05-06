@@ -76,7 +76,8 @@ Preserve these characteristics:
 - compact info chips
 - narrow editor widths where practical
 - readable but dense layout
-- different driver stints should remain visually distinguishable by color
+- different drivers' stint cards must use distinct colors
+- driver colors are assigned from driver list order and should not collide for visible configured drivers
 
 ## Drivers Tab
 
@@ -85,6 +86,8 @@ The drivers tab must remain easy to use in the constrained left panel.
 Avoid layouts where rows or controls become partially hidden or hard to scroll.
 
 It must include per-driver `VE Per Lap` input because energy planning now depends on driver-specific values.
+
+New drivers should default their time zone selector to the user's PC time zone.
 
 ## Visibility Rules
 

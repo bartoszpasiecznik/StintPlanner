@@ -14,8 +14,11 @@ A driver has:
 - time zone
 - max stints
 - assigned stints
+- color index
 
 `AssignedStints` is a calculated value and should not be treated as primary user input.
+
+`ColorIndex` is UI-facing state used to keep each driver's stint cards visually distinct in the timeline. It is assigned from the driver's position in the driver list.
 
 ### Stint
 
@@ -31,6 +34,7 @@ It stores:
 - driver local window
 - tyre set used during that stint
 - validation notes
+- driver color treatment via the assigned driver's color index
 
 ### Pit Stop
 

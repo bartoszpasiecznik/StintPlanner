@@ -4,7 +4,7 @@ This file is for future coding agents working in this repository.
 
 ## Project Summary
 
-LMU Stint Planner is a WPF desktop application for planning Le Mans Ultimate team races.
+LMU Stint Planner is an Avalonia desktop application for planning Le Mans Ultimate team races.
 
 Core concerns:
 
@@ -19,10 +19,14 @@ Core concerns:
 ## Repository Layout
 
 - `StintPlanner.sln`: solution
-- `LMUStintPlanner/LMUStintPlanner.csproj`: main project
-- `LMUStintPlanner/MainWindow.xaml`: all main UI layout
-- `LMUStintPlanner/MainWindow.xaml.cs`: window bootstrap
-- `LMUStintPlanner/MainViewModel.cs`: planner state, commands, domain models, calculations
+- `LMUStintPlanner/LMUStintPlanner.csproj`: Avalonia application project
+- `LMUStintPlanner/App.axaml`: application theme/style bootstrap
+- `LMUStintPlanner/Styles/PlannerControls.axaml`: shared control styling
+- `LMUStintPlanner/Views/MainWindow.axaml`: main window shell and top-level layout
+- `LMUStintPlanner/Views/Controls/`: setup panels, status cards, and timeline cards
+- `LMUStintPlanner/ViewModels/MainViewModel*.cs`: planner state, commands, and strategy logic
+- `LMUStintPlanner/ViewModels/Models/`: UI-facing planner models
+- `LMUStintPlanner/ViewModels/Services/`: calculation and catalog helpers
 - `docs/`: project documentation
 
 ## Build And Verification
@@ -43,14 +47,17 @@ dotnet run --project .\LMUStintPlanner\
 
 ## Current Architecture
 
-This project is intentionally simple and centralized.
+This project is intentionally simple and centralized, but the original single-file UI and view-model have been split into Avalonia views, controls, styles, partial view-model files, models, and services.
 
-- UI is in `MainWindow.xaml`
-- almost all behavior is in `MainViewModel.cs`
+- UI is in `Views/MainWindow.axaml` and `Views/Controls/*.axaml`
+- shared UI styling is in `Styles/PlannerControls.axaml`
+- planner state and orchestration are in `ViewModels/MainViewModel*.cs`
+- domain/UI models are in `ViewModels/Models/`
+- calculation helpers are in `ViewModels/Services/`
 - `StintPlan` is both a domain object and a UI-editable model
 - `PlanTimelineRow` is a UI adapter over `StintPlan`
 
-Do not assume there is a deeper layered architecture.
+Do not assume there is a deep layered architecture beyond this pragmatic Avalonia/MVVM split.
 
 ## Critical Behavior Invariants
 
@@ -68,6 +75,9 @@ Preserve these unless the user explicitly asks to change them:
 10. Summary includes total race laps
 11. The right side should stay compact and card-based, not revert to a large grid
 12. The first stint can use qualifying tyres, and tyre-set numbering must reflect that exactly
+13. Pit timing has no separate base service time; it is pit lane plus refill/VE time, tyre change time, and repair time
+14. New/default driver time zones use the user's PC time zone unless changed manually
+15. Driver stint-card colors are unique per configured driver and assigned from driver list order
 
 ## High-Risk Areas
 
@@ -120,7 +130,7 @@ Preserve these meanings:
 - Avoid making the right-side cards larger unless explicitly requested
 - Do not reintroduce unused settings that were already removed
 - Keep docs in sync when behavior changes
-- Preserve per-driver stint colors unless the user asks for a redesign
+- Preserve unique per-driver stint colors unless the user asks for a redesign
 
 ## Required Docs To Read First
 
@@ -146,7 +156,7 @@ Update the relevant docs if you change:
 
 ## When Refactoring
 
-If you split `MainViewModel.cs`, preserve:
+If you refactor `MainViewModel*.cs`, preserve:
 
 - current binding names used by XAML
 - current timeline editing behavior

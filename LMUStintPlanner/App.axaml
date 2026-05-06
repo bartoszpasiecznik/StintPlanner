@@ -7,5 +7,6 @@
     </Application.Resources>
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://LMUStintPlanner/Styles/PlannerControls.axaml" />
     </Application.Styles>
 </Application>

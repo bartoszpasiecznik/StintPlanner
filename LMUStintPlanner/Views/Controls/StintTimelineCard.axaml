@@ -1,0 +1,138 @@
+<UserControl x:Class="LMUStintPlanner.Views.Controls.StintTimelineCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:LMUStintPlanner.ViewModels"
+             x:DataType="viewModels:PlanTimelineRow">
+    <Border Padding="10"
+            Background="{Binding StintCardBackground}"
+            BorderBrush="{Binding StintBadgeBackground}"
+            BorderThickness="1"
+            CornerRadius="8"
+            IsVisible="{Binding IsStint}">
+        <Grid ColumnDefinitions="44,1.25*,2*,92" RowDefinitions="Auto,Auto">
+            <Border Width="34"
+                    Height="34"
+                    Background="{Binding StintBadgeBackground}"
+                    CornerRadius="6">
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{Binding StintBadgeForeground}"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Text="{Binding NumberText}" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Margin="8,0,14,0">
+                <TextBlock Classes="compactFieldLabel" Text="Driver" />
+                <ComboBox Classes="compactInput"
+                          ItemsSource="{Binding AvailableDrivers}"
+                          SelectedItem="{Binding Driver, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <Grid Grid.Column="2"
+                  Margin="0,0,14,0"
+                  ColumnDefinitions="74,112,*"
+                  RowDefinitions="Auto,Auto">
+                <StackPanel>
+                    <TextBlock Classes="compactFieldLabel" Text="Laps" />
+                    <TextBox Classes="compactInput" Text="{Binding Laps}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock Classes="compactFieldLabel" Text="Drive Time" />
+                    <TextBlock Margin="0,4,0,0"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#211A17"
+                               Text="{Binding MainTimeText}" />
+                </StackPanel>
+
+                <WrapPanel Grid.Column="2" Margin="10,18,0,0">
+                    <Border Margin="0,0,6,6"
+                            Padding="7,3"
+                            Background="{Binding StintChipBackground}"
+                            BorderBrush="{Binding StintBadgeBackground}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding StintAccentForeground}"
+                                       Text="Start" />
+                            <TextBlock FontSize="11" Foreground="{Binding StintAccentForeground}" Text="{Binding RaceStartText}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="0,0,6,6"
+                            Padding="7,3"
+                            Background="{Binding StintChipBackground}"
+                            BorderBrush="{Binding StintBadgeBackground}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding StintAccentForeground}"
+                                       Text="End" />
+                            <TextBlock FontSize="11" Foreground="{Binding StintAccentForeground}" Text="{Binding RaceEndText}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="0,0,6,6"
+                            Padding="7,3"
+                            Background="{Binding StintChipBackground}"
+                            BorderBrush="{Binding StintBadgeBackground}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding StintAccentForeground}"
+                                       Text="Local" />
+                            <TextBlock FontSize="11" Foreground="{Binding StintAccentForeground}" Text="{Binding DriverLocalText}" />
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+            </Grid>
+
+            <Border Grid.Column="3"
+                    Padding="8"
+                    Background="{Binding StintChipBackground}"
+                    BorderBrush="{Binding StintBadgeBackground}"
+                    BorderThickness="1"
+                    CornerRadius="7">
+                <StackPanel>
+                    <TextBlock FontSize="10"
+                               FontWeight="SemiBold"
+                               Foreground="{Binding StintAccentForeground}"
+                               Text="TYRE SET" />
+                    <TextBlock Margin="0,1,0,0"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#211A17"
+                               Text="{Binding TyreSetText}" />
+                    <CheckBox Margin="0,4,0,0"
+                              FontSize="11"
+                              FontWeight="SemiBold"
+                              Foreground="{Binding StintAccentForeground}"
+                              IsChecked="{Binding GetQualiTyres}"
+                              IsVisible="{Binding IsFirstStint}"
+                              Content="Quali" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       Grid.ColumnSpan="3"
+                       Margin="8,7,0,0"
+                       FontSize="12"
+                       Foreground="{Binding StintAccentForeground}"
+                       Text="{Binding Notes, StringFormat='Notes: {0}'}"
+                       TextWrapping="Wrap" />
+        </Grid>
+    </Border>
+</UserControl>

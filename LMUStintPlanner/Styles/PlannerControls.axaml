@@ -1,0 +1,292 @@
+<Styles xmlns="https://github.com/avaloniaui">
+    <Style Selector="Window">
+        <Setter Property="FontFamily" Value="Segoe UI, Inter, Arial" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="ListBoxItem:selected > Border">
+        <Setter Property="BorderBrush" Value="#F08A4B" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="Border.timelineSelectionFrame">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <Style Selector="ListBoxItem:selected Border.timelineSelectionFrame">
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="TabControl">
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style Selector="TabItem">
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="#9F9690" />
+    </Style>
+
+    <Style Selector="TabItem:selected">
+        <Setter Property="Foreground" Value="#F7EFE7" />
+        <Setter Property="Background" Value="#251B18" />
+    </Style>
+
+    <Style Selector="TextBlock.panelTitle">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="#F7EFE7" />
+    </Style>
+
+    <Style Selector="TextBlock.panelKicker">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="#D98549" />
+    </Style>
+
+    <Style Selector="TextBlock.fieldLabel">
+        <Setter Property="Margin" Value="0,12,0,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="#B9ACA3" />
+    </Style>
+
+    <Style Selector="TextBlock.lightFieldLabel">
+        <Setter Property="Margin" Value="0,10,0,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="#655B54" />
+    </Style>
+
+    <Style Selector="TextBlock.compactFieldLabel">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="#675A50" />
+    </Style>
+
+    <Style Selector="TextBox.setupInput, ComboBox.setupInput">
+        <Setter Property="Margin" Value="0,5,0,0" />
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Padding" Value="9,7" />
+        <Setter Property="Background" Value="#171210" />
+        <Setter Property="Foreground" Value="#F1E8E0" />
+        <Setter Property="BorderBrush" Value="#3B302B" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="TextBox.lightInput, ComboBox.lightInput">
+        <Setter Property="Margin" Value="0,5,0,0" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Background" Value="#FBF4ED" />
+        <Setter Property="Foreground" Value="#211A17" />
+        <Setter Property="BorderBrush" Value="#CDBCB0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="TextBox.compactInput, ComboBox.compactInput">
+        <Setter Property="Margin" Value="0,4,0,0" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Padding" Value="7,5" />
+        <Setter Property="Background" Value="#FBF4ED" />
+        <Setter Property="Foreground" Value="#211A17" />
+        <Setter Property="BorderBrush" Value="#CFBFB5" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="TextBox.driverInput, ComboBox.driverInput">
+        <Setter Property="Margin" Value="0,5,0,0" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Background" Value="#111827" />
+        <Setter Property="Foreground" Value="#F8FAFC" />
+        <Setter Property="BorderBrush" Value="#334155" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="TextBox.driverInput:pointerover, ComboBox.driverInput:pointerover">
+        <Setter Property="Background" Value="#111827" />
+        <Setter Property="Foreground" Value="#F8FAFC" />
+        <Setter Property="BorderBrush" Value="#475569" />
+    </Style>
+
+    <Style Selector="TextBox.driverInput:focus, ComboBox.driverInput:focus">
+        <Setter Property="Background" Value="#0F172A" />
+        <Setter Property="Foreground" Value="#F8FAFC" />
+        <Setter Property="BorderBrush" Value="#38BDF8" />
+    </Style>
+
+    <Style Selector="ComboBox.driverInput /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="#F8FAFC" />
+    </Style>
+
+    <Style Selector="ComboBox.driverInput:pointerover /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="#F8FAFC" />
+    </Style>
+
+    <Style Selector="ComboBox.driverInput:focus /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="#F8FAFC" />
+    </Style>
+
+    <Style Selector="TextBox:focus, ComboBox:focus">
+        <Setter Property="BorderBrush" Value="#F08A4B" />
+    </Style>
+
+    <Style Selector="Border.driverCard">
+        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="Padding" Value="13" />
+        <Setter Property="Background" Value="#0F172A" />
+        <Setter Property="BorderBrush" Value="#263244" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <Style Selector="Border.driverChip">
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Background" Value="#172033" />
+        <Setter Property="BorderBrush" Value="#334155" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="Border.driverCard TextBlock.fieldLabel">
+        <Setter Property="Foreground" Value="#CBD5E1" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="#D9CFC7" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Foreground" Value="#050505" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:pointerover">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Foreground" Value="#050505" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:checked /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="#050505" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:checked:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="#050505" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:disabled">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Foreground" Value="#050505" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:disabled /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:disabled:pointerover">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Foreground" Value="#050505" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="CheckBox.pitToggle:disabled:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#050505" />
+    </Style>
+
+    <Style Selector="Border.darkPanel">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="18" />
+        <Setter Property="Background" Value="#1B1513" />
+        <Setter Property="BorderBrush" Value="#312620" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <Style Selector="Border.infoPanel">
+        <Setter Property="Margin" Value="0,14,0,0" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Background" Value="#EDE2D8" />
+        <Setter Property="BorderBrush" Value="#CBB9AC" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <Style Selector="Border.lightChip">
+        <Setter Property="Margin" Value="0,0,6,6" />
+        <Setter Property="Padding" Value="7,3" />
+        <Setter Property="Background" Value="#F7EEE7" />
+        <Setter Property="BorderBrush" Value="#D9C8BC" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="Button.primaryAction">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Background" Value="#E06F38" />
+        <Setter Property="Foreground" Value="#1A100C" />
+        <Setter Property="BorderBrush" Value="#F08A4B" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Button.secondaryAction">
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Padding" Value="13,7" />
+        <Setter Property="Background" Value="#251B18" />
+        <Setter Property="Foreground" Value="#F1E8E0" />
+        <Setter Property="BorderBrush" Value="#4A3931" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Button.dangerAction">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="11,6" />
+        <Setter Property="Background" Value="#6F2528" />
+        <Setter Property="Foreground" Value="#F8EDEA" />
+        <Setter Property="BorderBrush" Value="#8C3538" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+</Styles>
